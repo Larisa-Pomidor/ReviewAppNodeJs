@@ -25,7 +25,10 @@ const getAllReviews = async (req, res) => {
                         exclude: ['reviewId', 'review_id']
                     }
                 }
-            ]
+            ],
+            attributes: {
+                exclude: ['publisher_id', 'developer_id', 'publisherId', 'developerId']
+            }
         });
 
         if (reviews.length === 0) {
@@ -59,7 +62,10 @@ const getReviewById = async (req, res) => {
                         exclude: ['reviewId', 'review_id']
                     }
                 }
-            ]
+            ],
+            attributes: {
+                exclude: ['publisher_id', 'developer_id', 'publisherId', 'developerId']
+            }
         });
 
         if (!review) {
@@ -152,7 +158,10 @@ const addReview = async (req, res) => {
                         exclude: ['reviewId', 'review_id']
                     }
                 }
-            ]
+            ],
+            attributes: {
+                exclude: ['publisher_id', 'developer_id', 'publisherId', 'developerId']
+            }
         });
 
         return res.status(200).json(updatedReview);
@@ -262,7 +271,10 @@ const updateReview = async (req, res) => {
                         exclude: ['reviewId', 'review_id']
                     }
                 }
-            ]
+            ],
+            attributes: {
+                exclude: ['publisher_id', 'developer_id', 'publisherId', 'developerId']
+            }
         });
 
         return res.status(200).json(updatedReview);

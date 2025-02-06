@@ -24,22 +24,22 @@ const Review = sequelize.define('Review', {
         allowNull: false,
         field: 'rating'
     },
-    developerId: { 
+    developerId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: Developer, 
+            model: Developer,
             key: 'id'
         },
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
         field: 'developer_id'
     },
-    publisherId: { 
+    publisherId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: Publisher, 
+            model: Publisher,
             key: 'id'
         },
         onDelete: 'CASCADE',
@@ -60,7 +60,21 @@ const Review = sequelize.define('Review', {
     tableName: 'reviews',
     timestamps: true,
     createdAt: 'createdAt',
-    updatedAt: 'editedAt'
+    updatedAt: 'editedAt',
+    defaultScope: {
+        include: [
+            {
+                model: Developer,
+                as: 'developer',
+                attributes: ['id', 'name'] 
+            },
+            {
+                model: Publisher,
+                as: 'publisher',
+                attributes: ['id', 'name']
+            }
+        ]
+    }
 });
 
 module.exports = Review;

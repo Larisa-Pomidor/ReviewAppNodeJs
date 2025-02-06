@@ -23,6 +23,8 @@ require('./model/Genre');
 require('./model/GenresReview');
 require('./model/PlatformReview');
 require('./model/Section');
+require('./model/Comment');
+require('./model/User');
 require('./model/associations');
 
 const PORT = process.env.PORT || 8080;
@@ -66,6 +68,7 @@ app.use('/reviews', require('./routes/api/reviews'));
 app.use('/publishers', require('./routes/api/publishers'));
 app.use('/developers', require('./routes/api/developers'));
 app.use('/genres', require('./routes/api/genres'));
+app.use('/comments', require('./routes/api/comments'));
 
 // Protected Routes
 

@@ -1,14 +1,19 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/dbConn');
 
-const User = sequelize.define('user', {
+const User = sequelize.define('User', {
     username: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
     },
+    nickname: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+    },
     roles: {
-        type: DataTypes.JSONB, 
+        type: DataTypes.JSONB,
         defaultValue: {
             User: 2001,
             Admin: null
@@ -18,16 +23,23 @@ const User = sequelize.define('user', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    avatar: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     refreshToken: {
         type: DataTypes.STRING,
+        field: 'refresh_token'
     },
+    isBanned: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+        field: 'is_banned'
+    }
 }, {
-    tableName: 'user',
+    tableName: 'users',
     timestamps: true,
 });
-
-// sequelize.sync()
-//     .then(() => console.log('User model synced with the database'))
-//     .catch((err) => console.error('Error syncing model:', err));
 
 module.exports = User;
