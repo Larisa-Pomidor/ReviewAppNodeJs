@@ -42,6 +42,49 @@ const getAllReviews = async (req, res) => {
     }
 };
 
+const getDLCsbyReviewId = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const review = await Review.findByPk(id);
+
+        if (!review) {
+            return res.status(404).json({ message: `Review with id ${id} not found` });
+        }
+
+        const currentDlcParent = !review.dlcParentId ? review : await Review.findByPk(review.dlcParentId);
+
+        if (!currentDlcParent) {
+            return res.status(404).json({ message: 'No DLC parent found' }); 
+        }
+
+        let DLCs = await Review.findAll({
+            where: { dlcParentId: currentDlcParent.id },
+            attributes: {
+                exclude: ['publisher_id', 'developer_id', 'publisherId', 'developerId']
+            },
+            include: [
+                { model: Developer, as: "developer" },
+                { model: Publisher, as: "publisher" }
+            ],
+        });
+
+
+        if (DLCs.length === 0) {
+            return res.status(204).json({ message: 'No DLCs found' }); // No Content
+        }
+
+        if (review.dlcParentId) {
+            DLCs = [currentDlcParent, ...DLCs];
+        }
+
+        return res.status(200).json(DLCs);
+    } catch (err) {
+        console.error('Error retrieving DLCs:', err);
+        return res.status(500).json({ message: 'An unexpected error occurred while retrieving DLCs.' });
+    }
+};
+
 const getReviewById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -308,5 +351,6 @@ module.exports = {
     getReviewById,
     addReview,
     updateReview,
-    deleteReview
+    deleteReview,
+    getDLCsbyReviewId
 }

@@ -55,6 +55,16 @@ const Review = sequelize.define('Review', {
         type: DataTypes.DATE,
         allowNull: false,
         field: 'edited_at'
+    },
+    dlcParentId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        field: 'dlc_parent_id'
+    },
+    reviewParentId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        field: 'review_parent_id'
     }
 }, {
     tableName: 'reviews',

@@ -17,4 +17,7 @@ router.route('/:id')
 router.route('/:reviewId/sections/:sectionId')
     .get(sectionsController.updateSection)
 
+router.route('/:id/dlcs')
+    .get(reviewsController.getDLCsbyReviewId)
+
 module.exports = router;
