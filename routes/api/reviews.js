@@ -10,6 +10,19 @@ const verifyRoles = require('../../middleware/verifyRoles');
  * /reviews:
  *   get:
  *     summary: Get all reviews
+  *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Page number (if omitted, returns all reviews)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Number of items per page (if omitted, returns all reviews)
  *     responses:
  *       200:
  *         description: Reviews details

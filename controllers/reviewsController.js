@@ -11,7 +11,11 @@ const Section = require('../model/Section');
 
 const getAllReviews = async (req, res) => {
     try {
-        const reviews = await Review.findAll({
+        const { page, limit } = req.query;
+        const pageNumber = parseInt(page);
+        const limitNumber = parseInt(limit);
+
+        let reviewsQuery = {
             include: [
                 { model: Genre, as: 'genres', through: { attributes: [] } },
                 {
@@ -23,26 +27,74 @@ const getAllReviews = async (req, res) => {
                 {
                     model: Section,
                     as: 'sections',
-                    attributes: {
-                        exclude: ['reviewId', 'review_id']
-                    }
+                    attributes: { exclude: ['reviewId', 'review_id'] }
                 }
             ],
             attributes: {
                 exclude: ['publisher_id', 'developer_id', 'publisherId', 'developerId']
             }
-        });
+        };
 
-        if (reviews.length === 0) {
-            return res.status(204).json({ message: 'No reviews found' }); // No Content
+        let totalReviews = await Review.count();
+
+        if (!isNaN(pageNumber) && !isNaN(limitNumber)) {
+            reviewsQuery.offset = (pageNumber - 1) * limitNumber;
+            reviewsQuery.limit = limitNumber;
         }
 
-        return res.status(200).json(reviews);
+        const reviews = await Review.findAll(reviewsQuery);
+
+        if (reviews.length === 0) {
+            return res.status(204).json({ message: 'No reviews found' });
+        }
+
+        return res.status(200).json({
+            totalReviews,
+            totalPages: pageNumber && limitNumber ? Math.ceil(totalReviews / limitNumber) : 1,
+            currentPage: pageNumber || 1,
+            data: reviews
+        });
+
     } catch (err) {
         console.error('Error retrieving reviews:', err);
         return res.status(500).json({ message: 'An unexpected error occurred while retrieving reviews.' });
     }
 };
+
+// const getAllReviews = async (req, res) => {
+//     try {
+//         const reviews = await Review.findAll({
+//             include: [
+//                 { model: Genre, as: 'genres', through: { attributes: [] } },
+//                 {
+//                     model: Platform,
+//                     as: 'platforms',
+//                     through: { attributes: [] },
+//                     required: false
+//                 },
+//                 {
+//                     model: Section,
+//                     as: 'sections',
+//                     attributes: {
+//                         exclude: ['reviewId', 'review_id']
+//                     }
+//                 }
+//             ],
+//             attributes: {
+//                 exclude: ['publisher_id', 'developer_id', 'publisherId', 'developerId']
+//             }
+//         });
+
+//         if (reviews.length === 0) {
+//             return res.status(204).json({ message: 'No reviews found' }); // No Content
+//         }
+
+//         return res.status(200).json(reviews);
+//     } catch (err) {
+//         console.error('Error retrieving reviews:', err);
+//         return res.status(500).json({ message: 'An unexpected error occurred while retrieving reviews.' });
+//     }
+// };
 
 const getReviewById = async (req, res) => {
     try {
