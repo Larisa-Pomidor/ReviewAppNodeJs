@@ -1,3 +1,5 @@
+const { Op } = require("sequelize");
+
 const GenreReview = require('../model/GenresReview');
 const PlatformReview = require('../model/PlatformReview');
 const Platform = require('../model/Platform');
@@ -42,49 +44,6 @@ const getAllReviews = async (req, res) => {
     }
 };
 
-const getDLCsbyReviewId = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const review = await Review.findByPk(id);
-
-        if (!review) {
-            return res.status(404).json({ message: `Review with id ${id} not found` });
-        }
-
-        const currentDlcParent = !review.dlcParentId ? review : await Review.findByPk(review.dlcParentId);
-
-        if (!currentDlcParent) {
-            return res.status(404).json({ message: 'No DLC parent found' }); 
-        }
-
-        let DLCs = await Review.findAll({
-            where: { dlcParentId: currentDlcParent.id },
-            attributes: {
-                exclude: ['publisher_id', 'developer_id', 'publisherId', 'developerId']
-            },
-            include: [
-                { model: Developer, as: "developer" },
-                { model: Publisher, as: "publisher" }
-            ],
-        });
-
-
-        if (DLCs.length === 0) {
-            return res.status(204).json({ message: 'No DLCs found' }); // No Content
-        }
-
-        if (review.dlcParentId) {
-            DLCs = [currentDlcParent, ...DLCs];
-        }
-
-        return res.status(200).json(DLCs);
-    } catch (err) {
-        console.error('Error retrieving DLCs:', err);
-        return res.status(500).json({ message: 'An unexpected error occurred while retrieving DLCs.' });
-    }
-};
-
 const getReviewById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -119,6 +78,173 @@ const getReviewById = async (req, res) => {
     } catch (err) {
         console.error(`Error retrieving review with id ${req.params.id}:`, err);
         return res.status(500).json({ message: 'An unexpected error occurred while retrieving the review.' });
+    }
+};
+
+const getDLCsbyReviewId = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const review = await Review.findByPk(id);
+
+        if (!review) {
+            return res.status(404).json({ message: `Review with id ${id} not found` });
+        }
+
+        const currentDlcParent = !review.dlcParentId ? review : await Review.findByPk(review.dlcParentId);
+
+        if (!currentDlcParent) {
+            return res.status(404).json({ message: 'No DLC parent found' });
+        }
+
+        let DLCs = await Review.findAll({
+            where: { dlcParentId: currentDlcParent.id },
+            attributes: {
+                exclude: ['publisher_id', 'developer_id', 'publisherId', 'developerId']
+            },
+            include: [
+                { model: Developer, as: "developer" },
+                { model: Publisher, as: "publisher" },
+                { model: Genre, as: "genres", through: { attributes: [] } },
+                { model: Platform, as: "platforms", through: { attributes: [] } }
+            ],
+        });
+
+
+        if (DLCs.length === 0) {
+            return res.status(204).json({ message: 'No DLCs found' }); // No Content
+        }
+
+        if (review.dlcParentId) {
+            DLCs = [currentDlcParent, ...DLCs];
+        }
+
+        return res.status(200).json(DLCs);
+    } catch (err) {
+        console.error('Error retrieving DLCs:', err);
+        return res.status(500).json({ message: 'An unexpected error occurred while retrieving DLCs.' });
+    }
+};
+
+const getReviewHierarchy = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        let review = await Review.findByPk(id, {
+            attributes: {
+                exclude: ['publisher_id', 'developer_id', 'publisherId', 'developerId']
+            },
+            include: [
+                { model: Developer, as: "developer" },
+                { model: Publisher, as: "publisher" },
+                { model: Genre, as: "genres", through: { attributes: [] } },
+                { model: Platform, as: "platforms", through: { attributes: [] } }
+            ],
+        });
+
+        if (!review) {
+            return res.status(404).json({ message: `Review with id ${id} not found` });
+        }
+
+        let parentReviews = [];
+        let currentParentId = review.reviewParentId;
+
+        while (currentParentId) {
+            const parent = await Review.findByPk(currentParentId, {
+                attributes: {
+                    exclude: ['publisher_id', 'developer_id', 'publisherId', 'developerId']
+                },
+                include: [
+                    { model: Developer, as: "developer" },
+                    { model: Publisher, as: "publisher" },
+                    { model: Genre, as: "genres", through: { attributes: [] } },
+                    { model: Platform, as: "platforms", through: { attributes: [] } }
+                ],
+            });
+
+            if (!parent) break;
+
+            parentReviews.unshift(parent);
+            currentParentId = parent.reviewParentId;
+        }
+
+        let childReviews = [];
+        let currentChildId = id;
+
+        while (true) {
+            const child = await Review.findOne({
+                where: { reviewParentId: currentChildId },
+                attributes: {
+                    exclude: ['publisher_id', 'developer_id', 'publisherId', 'developerId']
+                },
+                include: [
+                    { model: Developer, as: "developer" },
+                    { model: Publisher, as: "publisher" },
+                    { model: Genre, as: "genres", through: { attributes: [] } },
+                    { model: Platform, as: "platforms", through: { attributes: [] } }
+                ],
+            });
+
+            if (!child) break;
+
+            childReviews.push(child);
+            currentChildId = child.id;
+        }
+
+        const reviewHierarchy = [...parentReviews, ...childReviews];
+
+        return res.status(200).json(reviewHierarchy);
+    } catch (err) {
+        console.error('Error retrieving review hierarchy:', err);
+        return res.status(500).json({ message: 'An unexpected error occurred while retrieving reviews.' });
+    }
+};
+
+const getReviewsByGenres = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const review = await Review.findByPk(id, {
+            include: [{ model: Genre, as: "genres", attributes: ["id", "name"] }]
+        });
+
+        if (!review) {
+            return res.status(404).json({ message: `Review with id ${id} not found` });
+        }
+
+        const genreIds = review.genres.map(g => g.id);
+
+        if (genreIds.length === 0) {
+            return res.status(204).json({ message: 'No genres included' });
+        }
+
+        const similarReviews = await Review.findAll({
+            where: {
+                id: { [Op.ne]: id },
+            },
+            include: [
+                {
+                    model: Genre,
+                    as: "genres",
+                    where: {
+                        id: { [Op.in]: genreIds },
+                    },
+                    through: { attributes: [] }
+                },
+                { model: Developer, as: "developer" },
+                { model: Publisher, as: "publisher" },
+                { model: Platform, as: "platforms", through: { attributes: [] } }
+            ],
+            attributes: {
+                exclude: ['publisher_id', 'developer_id', 'publisherId', 'developerId']
+            },
+            limit: 10
+        });
+
+        return res.status(200).json(similarReviews);
+    } catch (err) {
+        console.error('Error retrieving similar reviews:', err);
+        return res.status(500).json({ message: 'An unexpected error occurred while retrieving similar reviews.' });
     }
 };
 
@@ -352,5 +478,7 @@ module.exports = {
     addReview,
     updateReview,
     deleteReview,
-    getDLCsbyReviewId
+    getDLCsbyReviewId,
+    getReviewHierarchy,
+    getReviewsByGenres
 }

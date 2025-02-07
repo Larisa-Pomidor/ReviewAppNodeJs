@@ -20,4 +20,10 @@ router.route('/:reviewId/sections/:sectionId')
 router.route('/:id/dlcs')
     .get(reviewsController.getDLCsbyReviewId)
 
+router.route('/:id/hierarchy')
+    .get(reviewsController.getReviewHierarchy)
+
+router.route('/:id/genres')
+    .get(reviewsController.getReviewsByGenres)
+
 module.exports = router;
