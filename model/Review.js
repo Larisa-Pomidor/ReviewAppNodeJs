@@ -14,6 +14,11 @@ const Review = sequelize.define('Review', {
         allowNull: false,
         field: 'game_poster'
     },
+    gameThumbnail: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        field: 'game_thumbnail'
+    },
     gameReleaseDate: {
         type: DataTypes.DATE,
         allowNull: false,
