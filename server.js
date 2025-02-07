@@ -1,7 +1,10 @@
 require('dotenv').config();
 
 const express = require('express');
+const { swaggerUi, swaggerDocs } = require("./swagger");
 const app = express();
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
 const path = require('path');
 
 const cors = require('cors');

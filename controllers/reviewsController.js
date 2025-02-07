@@ -193,6 +193,10 @@ const getReviewHierarchy = async (req, res) => {
 
         const reviewHierarchy = [...parentReviews, ...childReviews];
 
+        if (reviewHierarchy === 0) {
+            return res.status(204).json({ message: 'No hierarchy found' }); // No Content
+        }
+
         return res.status(200).json(reviewHierarchy);
     } catch (err) {
         console.error('Error retrieving review hierarchy:', err);
