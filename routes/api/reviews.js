@@ -166,7 +166,7 @@ router.route('/')
 *       500:
 *         description: An unexpected error occurred while updating the review.
 *   delete:
-*     summary: Deletee the review
+*     summary: Delete the review
 *     parameters:
 *       - in: path
 *         name: id

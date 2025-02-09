@@ -6,7 +6,7 @@ const verifyRoles = require('../../middleware/verifyRoles');
 
 /**
 * @swagger
-* /comments:
+* /comments/{id}:
 *   get:
 *     summary: Get all comments by review ID
 *     parameters:
