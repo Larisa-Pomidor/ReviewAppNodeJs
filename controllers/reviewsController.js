@@ -259,6 +259,13 @@ const getReviewHierarchy = async (req, res) => {
 const getReviewsByGenres = async (req, res) => {
     const { id } = req.params;
 
+    let { limit } = req.query;
+    limit = parseInt(limit) || 10; 
+
+    if (limit < 1) {
+        return res.status(400).json({ message: "Limit must be at least 1." });
+    }
+
     try {
         const review = await Review.findByPk(id, {
             include: [{ model: Genre, as: "genres", attributes: ["id", "name"] }]
@@ -294,7 +301,7 @@ const getReviewsByGenres = async (req, res) => {
             attributes: {
                 exclude: ['publisher_id', 'developer_id', 'publisherId', 'developerId']
             },
-            limit: 10
+            limit: limit
         });
 
         return res.status(200).json(similarReviews);

@@ -294,6 +294,9 @@ router.route('/:id/hierarchy')
 *       - in: path
 *         name: id
 *         required: true
+*       - in: query
+*         name: limit
+*         required: false
 *         schema:
 *           type: integer
 *     responses:
@@ -301,6 +304,8 @@ router.route('/:id/hierarchy')
 *         description: Reviews details
 *       204:
 *         description: No related reviews found
+*       400:
+*          description: Limit must be at least 1
 *       404:
 *          description: Review with {id} not found
 *       500:
