@@ -268,7 +268,7 @@ const getReviewsByGenres = async (req, res) => {
 
     try {
         const review = await Review.findByPk(id, {
-            include: [{ model: Genre, as: "genres", attributes: ["id", "name"] }]
+            include: [{ model: Genre, as: "genres", attributes: ["id", "name_ru", "name_en", "name_uk"] }]
         });
 
         if (!review) {

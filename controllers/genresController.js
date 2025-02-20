@@ -55,15 +55,17 @@ const deleteGenre = async (req, res) => {
 
 const addGenre = async (req, res) => {
     try {
-        const { name } = req.body;
+        const { name_ru, name_en, name_uk } = req.body;
 
-        if (!name) {
+        if (!name_ru || !name_en || name_uk) {
             return res.status(400)
-                .json({ message: 'Missing required fields: name.' });
+                .json({ message: 'Fields: name_ru, name_en, or name_uk are required.' });
         }
 
         const newGenre = await Genre.create({
-            name
+            name_ru,
+            name_en,
+            name_uk
         });
 
         return res.status(200).json(newGenre);
@@ -76,11 +78,11 @@ const addGenre = async (req, res) => {
 const updateGenre = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name } = req.body;
+        const { name_ru, name_en, name_uk } = req.body;
 
-        if (!name) {
+        if (!name_ru && !name_en && name_uk) {
             return res.status(400)
-                .json({ message: 'The name field is required.' });
+                .json({ message: 'At least one change is required.' });
         }
 
         const genre = await Genre.findByPk(id);
@@ -89,7 +91,9 @@ const updateGenre = async (req, res) => {
             return res.status(404).json({ message: `Genre with id ${id} not found` });
         }
 
-        genre.name = name;
+        genre.name_ru = name_ru;
+        genre.name_en = name_en;
+        genre.name_uk = name_uk;
 
         await genre.save();
 

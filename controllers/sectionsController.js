@@ -24,11 +24,11 @@ const addSection = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const { name, text, image } = req.body;
+        const { name_ru, name_en, name_uk, text_ru, text_en, text_uk, image } = req.body;
 
-        if (!name || !text) {
+        if (!name_ru || !name_en || name_uk || !text_ru || !text_en || !text_uk) {
             return res.status(400)
-                .json({ message: 'Missing required fields: name, text' });
+                .json({ message: 'Fields: name_ru, name_en, name_uk, text_ru, text_en, text_uk are required.' });
         }
 
         const review = await Review.findByPk(id);
@@ -37,8 +37,12 @@ const addSection = async (req, res) => {
         }
 
         const newSection = await Section.create({
-            name,
-            text,
+            name_ru,
+            name_en, 
+            name_uk,
+            text_ru,
+            text_en,
+            text_uk,
             ...(image && { image })
         });
 
@@ -53,12 +57,12 @@ const updateSection = async (req, res) => {
     try {
         const { reviewId } = req.params;
         const { sectionId } = req.params;
-        const { name, title, image } = req.body;
+        
+        const { name_ru, name_en, name_uk, text_ru, text_en, text_uk, image } = req.body;
 
-        if (
-            !name && !title && !image
-        ) {
-            return res.status(400).json({ message: 'At least one change is required.' });
+        if (!name_ru && !name_en && name_uk && !text_ru && !text_en && !text_uk) {
+            return res.status(400)
+                .json({ message: 'At least one of the fields: name_ru, name_en, name_uk, text_ru, text_en, text_uk are required.' });
         }
 
         const review = await Review.findByPk(reviewId);
