@@ -3,7 +3,6 @@ require('dotenv').config();
 const express = require('express');
 const { swaggerUi, swaggerDocs } = require("./swagger");
 const app = express();
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 const path = require('path');
 
@@ -59,7 +58,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
 
-// Routes
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
 app.use('/', express.static(path.join(__dirname, '/public')));
 app.use('/', require('./routes/root'));
 app.use('/register', require('./routes/register'));
@@ -78,8 +78,6 @@ app.use('/comments', require('./routes/api/comments'));
 app.use(verifyJWT);
 app.use('/users', require('./routes/api/users'));
 
-
-// 404 Handler
 app.all('*', (req, res) => {
     res.status(404).json({ "error": "404 Not Found" });
 });
