@@ -21,7 +21,7 @@ const Section = sequelize.define('Section', {
     textEn: {
         type: DataTypes.STRING,
         allowNull: false,
-        field: 'text_uk'
+        field: 'text_en'
     },  
     nameUk: {
         type: DataTypes.STRING,
