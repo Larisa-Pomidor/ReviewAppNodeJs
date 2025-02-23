@@ -3,33 +3,44 @@ const sequelize = require('../config/dbConn');
 const Review = require('./Review');
 
 const Section = sequelize.define('Section', {
-    name_ru: {
+    nameRu: {
         type: DataTypes.STRING,
         allowNull: false,
+        field: 'name_ru'
     },
-    text_ru: {
+    textRu: {
         type: DataTypes.STRING,
         allowNull: false,
+        field: 'text_ru'
     },
-    name_en: {
+    nameEn: {
         type: DataTypes.STRING,
         allowNull: false,
+        field: 'name_en'
     },
-    text_en: {
+    textEn: {
         type: DataTypes.STRING,
         allowNull: false,
+        field: 'text_uk'
     },  
-    name_uk: {
+    nameUk: {
         type: DataTypes.STRING,
         allowNull: false,
+        field: 'name_uk'
     },
-    text_uk: {
+    textUk: {
         type: DataTypes.STRING,
         allowNull: false,
+        field: 'text_uk'
     },  
     image: {
         type: DataTypes.DATE,
         allowNull: false,
+    },
+    isSummary: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        field: 'is_summary'
     },
     reviewId: { 
         type: DataTypes.INTEGER,

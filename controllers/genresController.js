@@ -55,17 +55,17 @@ const deleteGenre = async (req, res) => {
 
 const addGenre = async (req, res) => {
     try {
-        const { name_ru, name_en, name_uk } = req.body;
+        const { nameRu, nameEn, nameUk } = req.body;
 
-        if (!name_ru || !name_en || name_uk) {
+        if (!nameRu || !nameEn || nameUk) {
             return res.status(400)
-                .json({ message: 'Fields: name_ru, name_en, or name_uk are required.' });
+                .json({ message: 'Fields: nameRu, nameEn, or nameUk are required.' });
         }
 
         const newGenre = await Genre.create({
-            name_ru,
-            name_en,
-            name_uk
+            nameRu,
+            nameEn,
+            nameUk
         });
 
         return res.status(200).json(newGenre);
@@ -78,9 +78,9 @@ const addGenre = async (req, res) => {
 const updateGenre = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name_ru, name_en, name_uk } = req.body;
+        const { nameRu, nameEn, nameUk } = req.body;
 
-        if (!name_ru && !name_en && name_uk) {
+        if (!nameRu && !nameEn && nameUk) {
             return res.status(400)
                 .json({ message: 'At least one change is required.' });
         }
@@ -91,9 +91,9 @@ const updateGenre = async (req, res) => {
             return res.status(404).json({ message: `Genre with id ${id} not found` });
         }
 
-        genre.name_ru = name_ru;
-        genre.name_en = name_en;
-        genre.name_uk = name_uk;
+        genre.nameRu = nameRu;
+        genre.nameEn = nameEn;
+        genre.nameUk = nameUk;
 
         await genre.save();
 

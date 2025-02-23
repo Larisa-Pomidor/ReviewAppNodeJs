@@ -24,11 +24,11 @@ const addSection = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const { name_ru, name_en, name_uk, text_ru, text_en, text_uk, image } = req.body;
+        const { nameRu, nameEn, nameUk, textRu, textEn, textUk, image } = req.body;
 
-        if (!name_ru || !name_en || name_uk || !text_ru || !text_en || !text_uk) {
+        if (!nameRu || !nameEn || nameUk || !textRu || !textEn || !textUk) {
             return res.status(400)
-                .json({ message: 'Fields: name_ru, name_en, name_uk, text_ru, text_en, text_uk are required.' });
+                .json({ message: 'Fields: nameRu, nameEn, nameUk, textRu, textEn, textUk are required.' });
         }
 
         const review = await Review.findByPk(id);
@@ -37,12 +37,12 @@ const addSection = async (req, res) => {
         }
 
         const newSection = await Section.create({
-            name_ru,
-            name_en, 
-            name_uk,
-            text_ru,
-            text_en,
-            text_uk,
+            nameRu,
+            nameEn, 
+            nameUk,
+            textRu,
+            textEn,
+            textUk,
             ...(image && { image })
         });
 
@@ -58,11 +58,11 @@ const updateSection = async (req, res) => {
         const { reviewId } = req.params;
         const { sectionId } = req.params;
         
-        const { name_ru, name_en, name_uk, text_ru, text_en, text_uk, image } = req.body;
+        const { nameRu, nameEn, nameUk, textRu, textEn, textUk, image } = req.body;
 
-        if (!name_ru && !name_en && name_uk && !text_ru && !text_en && !text_uk) {
+        if (!nameRu && !nameEn && nameUk && !textRu && !textEn && !textUk) {
             return res.status(400)
-                .json({ message: 'At least one of the fields: name_ru, name_en, name_uk, text_ru, text_en, text_uk are required.' });
+                .json({ message: 'At least one of the fields: nameRu, nameEn, nameUk, textRu, textEn, textUk are required.' });
         }
 
         const review = await Review.findByPk(reviewId);
@@ -77,8 +77,12 @@ const updateSection = async (req, res) => {
             return res.status(404).json({ message: `Section with id ${sectionId} not found` });
         }
 
-        if (name) section.name = name;
-        if (title) section.title = title;
+        if (nameRu) section.nameRu = nameRu;
+        if (nameEn) section.nameEn = nameEn;
+        if (nameUk) section.nameUk = nameUk;
+        if (textRu) section.textRu = textRu;
+        if (textEn) section.textEn = textEn;
+        if (textUk) section.textUk = textUk;
         if (image) section.image = image;        
 
         await section.save();

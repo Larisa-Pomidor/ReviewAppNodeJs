@@ -2,17 +2,20 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/dbConn');
 
 const Genre = sequelize.define('Genre', {
-    name_ru: {
+    nameRu: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
+        field: 'name_ru'
     },
-    name_en: {
+    nameEn: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
+        field: 'name_en'
     },
-    name_uk: {
+    nameUk: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
+        field: 'name_uk'
     }
 }, {
     tableName: 'genres',
