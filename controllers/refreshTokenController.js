@@ -5,6 +5,7 @@ const handleRefreshToken = async (req, res) => {
     const cookies = req.cookies;
     if (!cookies?.jwt) return res.sendStatus(401); // Unauthorized
     const refreshToken = cookies.jwt;
+    
 
     try {
         const foundUser = await User.findOne({ where: { refreshToken } });
@@ -27,7 +28,7 @@ const handleRefreshToken = async (req, res) => {
                     process.env.ACCESS_TOKEN_SECRET,
                     { expiresIn: '15m' }
                 );
-                res.json({ roles, accessToken });
+                return res.json({ roles, accessToken });
             }
         );
     } catch (err) {

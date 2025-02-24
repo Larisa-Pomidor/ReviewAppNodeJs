@@ -36,10 +36,17 @@ const User = sequelize.define('User', {
         allowNull: false,
         defaultValue: false,
         field: 'is_banned'
-    }
+    },
+    createdAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        field: 'created_at'
+    },
 }, {
     tableName: 'users',
     timestamps: true,
+    createdAt: 'createdAt',
+    updatedAt: false,
 });
 
 module.exports = User;
