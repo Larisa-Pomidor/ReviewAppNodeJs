@@ -24,23 +24,25 @@ const handleLogin = async (req, res) => {
                 process.env.ACCESS_TOKEN_SECRET,
                 { expiresIn: '15m' }
             );
-            const refreshToken = jwt.sign(
+            const _refreshToken = jwt.sign(
                 { "username": foundUser.username },
                 process.env.REFRESH_TOKEN_SECRET,
                 { expiresIn: '100d' }
             );
 
-            foundUser.refreshToken = refreshToken;
+            foundUser.refreshToken = _refreshToken;
             await foundUser.save();
 
-            res.cookie('jwt', refreshToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 });
+            res.cookie('jwt', _refreshToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 });
 
-            res.json({ roles, accessToken });
+            const { password, refreshToken, ...userWithoutCredentials } = foundUser.dataValues
+
+            return res.json({ roles, accessToken, user: userWithoutCredentials });
         } else {
-            res.sendStatus(401); // Unauthorized 
+            return res.sendStatus(401); // Unauthorized 
         }
     } catch (err) {
-        res.status(500).json({ 'message': err.message });
+        return res.status(500).json({ 'message': err.message });
     }
 }
 
