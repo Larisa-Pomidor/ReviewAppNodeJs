@@ -29,6 +29,11 @@ const Review = sequelize.define('Review', {
         allowNull: false,
         field: 'rating'
     },
+    views: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        field: 'views'
+    },
     developerId: {
         type: DataTypes.INTEGER,
         allowNull: false,

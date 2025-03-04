@@ -364,207 +364,6 @@ const addReview = async (req, res) => {
     });
 };
 
-// const addReview = async (req, res) => {
-//     uploadImages(req, res, async (err) => {
-//         if (err) return res.status(400).json({ error: "Multer error" });
-
-//         try {
-//             const { gameTitle, gameReleaseDate, adminRating, developerId, publisherId, genreIds, platformIds } = req.body;
-
-//             if (!gameTitle || !req.files.gamePoster || !req.files.gameThumbnail || !gameReleaseDate || !adminRating || !developerId || !publisherId) {
-//                 return res.status(400).json({ message: "Missing required fields" });
-//             }
-
-//             const developer = await Developer.findByPk(developerId);
-//             if (!developer) return res.status(404).json({ message: `Developer with id ${developerId} not found` });
-
-//             const publisher = await Publisher.findByPk(publisherId);
-//             if (!publisher) return res.status(404).json({ message: `Publisher with id ${publisherId} not found` });
-
-//             const gamePosterResult = await new Promise((resolve, reject) => {
-//                 cloudinary.uploader.upload_stream(
-//                     { folder: "uploads/gamePosters" },
-//                     (error, cloudinaryResult) => {
-//                         if (error) reject(error);
-//                         else resolve(cloudinaryResult.secure_url);
-//                     }
-//                 ).end(req.files.gamePoster[0].buffer);
-//             });
-
-//             const gameThumbnailResult = await new Promise((resolve, reject) => {
-//                 cloudinary.uploader.upload_stream(
-//                     { folder: "uploads/gameThumbnails" },
-//                     (error, cloudinaryResult) => {
-//                         if (error) reject(error);
-//                         else resolve(cloudinaryResult.secure_url);
-//                     }
-//                 ).end(req.files.gameThumbnail[0].buffer);
-//             });
-
-//             const newReview = await Review.create({
-//                 gameTitle,
-//                 gamePoster: gamePosterResult,
-//                 gameThumbnail: gameThumbnailResult,
-//                 gameReleaseDate,
-//                 adminRating,
-//                 developerId,
-//                 publisherId
-//             });
-
-//             if (genreIds && genreIds.length > 0) {
-//                 const genres = await Genre.findAll({ where: { id: genreIds } });
-//                 if (genres.length !== genreIds.length) return res.status(404).json({ message: "One or more genres not found" });
-
-//                 await Promise.all(
-//                     genres.map(async (genre) => {
-//                         await GenreReview.create({ reviewId: newReview.id, genreId: genre.id });
-//                     })
-//                 );
-//             }
-
-//             if (platformIds && platformIds.length > 0) {
-//                 const platforms = await Platform.findAll({ where: { id: platformIds } });
-//                 if (platforms.length !== platformIds.length) return res.status(404).json({ message: "One or more platforms not found" });
-
-//                 await Promise.all(
-//                     platforms.map(async (platform) => {
-//                         await PlatformReview.create({ reviewId: newReview.id, platformId: platform.id });
-//                     })
-//                 );
-//             }
-
-//             const updatedReview = await Review.findByPk(newReview.id, {
-//                 include: [
-//                     { model: Genre, as: "genres", through: { attributes: [] } },
-//                     { model: Platform, as: "platforms", through: { attributes: [] } }
-//                 ],
-//                 attributes: { exclude: ["publisher_id", "developer_id", "publisherId", "developerId"] }
-//             });
-
-//             return res.status(200).json(updatedReview);
-//         } catch (error) {
-//             console.error("Error adding new review:", error);
-//             return res.status(500).json({ message: "An error occurred while adding the review." });
-//         }
-//     });
-// };
-
-// const addReview = async (req, res) => {
-//     try {
-//         const { gameTitle, gamePoster, gameReleaseDate, adminRating, gameThumbnail,
-//             developerId, publisherId, genreIds, platformIds } = req.body;
-
-//         if (!gameTitle || !gamePoster || !gameReleaseDate || !adminRating
-//             || !developerId || !publisherId || !gameThumbnail) {
-//             return res.status(400)
-//                 .json({
-//                     message: `Missing required fields: gameTitle, gamePoster, 
-//                     gameReleaseDate, adminRating, developerId, publisherId, gameThumbnail` });
-//         }
-
-//         const developer = await Developer.findByPk(developerId);
-//         if (!developer) {
-//             return res.status(404).json({ message: `Developer with id ${developerId} not found` });
-//         }
-
-//         const publisher = await Publisher.findByPk(publisherId);
-//         if (!publisher) {
-//             return res.status(404).json({ message: `Publisher with id ${publisherId} not found` });
-//         }
-
-//         upload(req, res, async (err) => {
-//             if (err) return res.status(400).json({ error: "Multer error" });
-
-//             if (!req.file) return res.status(400).json({ error: "No file provided" });
-
-//             try {
-//                 const result = await new Promise((resolve, reject) => {
-//                     cloudinary.uploader.upload_stream(
-//                         { folder: "uploads" },
-//                         (error, cloudinaryResult) => {
-//                             if (error) reject(error);
-//                             else resolve(cloudinaryResult);
-//                         }
-//                     ).end(req.file.buffer);
-//                 });
-
-//                 res.json({ url: result.secure_url });
-//             } catch (error) {
-//                 res.status(500).json({ error: "Upload failed" });
-//             }
-//         });
-
-//         const newReview = await Review.create({
-//             gameTitle,
-//             gamePoster,
-//             gameReleaseDate,
-//             adminRating,
-//             developerId,
-//             publisherId
-//         });
-
-//         if (genreIds && genreIds.length > 0) {
-
-//             const genres = await Genre.findAll({
-//                 where: { id: genreIds }
-//             });
-
-//             if (genres.length !== genreIds.length) {
-//                 return res.status(404).json({ message: 'One or more genres not found' });
-//             }
-
-//             await Promise.all(
-//                 genres.map(async (genre) => {
-
-//                     await GenreReview.create({
-//                         reviewId: newReview.id,
-//                         genreId: genre.id
-//                     });
-//                 })
-//             );
-//         }
-
-//         if (platformIds && platformIds.length > 0) {
-//             const platforms = await Platform.findAll({
-//                 where: { id: platformIds }
-//             });
-
-//             if (platforms.length !== platformIds.length) {
-//                 return res.status(404).json({ message: 'One or more platforms not found' });
-//             }
-
-//             await Promise.all(
-//                 platforms.map(async (platform) => {
-//                     await PlatformReview.create({
-//                         reviewId: newReview.id,
-//                         platformId: platform.id
-//                     });
-//                 })
-//             );
-//         }
-
-//         const updatedReview = await Review.findByPk(newReview.id, {
-//             include: [
-//                 { model: Genre, as: 'genres', through: { attributes: [] } },
-//                 { model: Platform, as: 'platforms', through: { attributes: [] } },
-//                 {
-//                     model: Section, as: 'sections', attributes: {
-//                         exclude: ['reviewId', 'review_id']
-//                     }
-//                 }
-//             ],
-//             attributes: {
-//                 exclude: ['publisher_id', 'developer_id', 'publisherId', 'developerId']
-//             }
-//         });
-
-//         return res.status(200).json(updatedReview);
-//     } catch (err) {
-//         console.error('Error adding new review:', err);
-//         return res.status(500).json({ message: 'An error occurred while adding the review.' });
-//     }
-// };
-
 const updateReview = async (req, res) => {
     try {
         const { id } = req.params;
@@ -678,6 +477,27 @@ const updateReview = async (req, res) => {
     }
 };
 
+const updateViews = async (req, res) => {
+    try {
+        const { id } = req.params;        
+
+        const review = await Review.findByPk(id);
+
+        if (!review) {
+            return res.status(404).json({ message: `Review with id ${id} not found` });
+        }   
+        
+        review.views = Number(review.views) + 1;
+
+        await review.save();
+
+        return res.status(200).json(review.views);
+    } catch (err) {
+        console.error(`Error updating review with id ${id}:`, err);
+        return res.status(500).json({ message: 'An error occurred while updating the review.' });
+    }
+};
+
 const deleteReview = async (req, res) => {
     try {
         const { id } = req.params;
@@ -705,5 +525,6 @@ module.exports = {
     deleteReview,
     getDLCsbyReviewId,
     getReviewHierarchy,
-    getReviewsByGenres
+    getReviewsByGenres,
+    updateViews
 }

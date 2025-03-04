@@ -314,4 +314,7 @@ router.route('/:id/hierarchy')
 router.route('/:id/genres')
     .get(reviewsController.getReviewsByGenres)
 
+router.route('/:id/views')
+    .put(reviewsController.updateViews)
+
 module.exports = router;
