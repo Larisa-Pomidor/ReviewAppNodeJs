@@ -70,4 +70,10 @@ router.route('/:id')
     .post(commentsController.addCommentByReviewId)
     .delete(commentsController.banCommentById)
 
+router.route('/:id/like')
+    .put(commentsController.likeComment)
+
+router.route('/:id/dislike')
+    .put(commentsController.dislikeComment)
+
 module.exports = router;
