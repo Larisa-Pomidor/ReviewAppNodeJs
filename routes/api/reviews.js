@@ -317,4 +317,7 @@ router.route('/:id/genres')
 router.route('/:id/views')
     .put(reviewsController.updateViews)
 
+router.route('/:id/rate')
+    .put(reviewsController.rateReview)
+
 module.exports = router;

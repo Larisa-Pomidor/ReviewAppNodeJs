@@ -8,6 +8,8 @@ const GenreReview = require('./GenresReview');
 const Section = require('./Section');
 const User = require('./User');
 const Comment = require('./Comment');
+const ReviewUser = require('./ReviewUser');
+const CommentUser = require('./CommentUser');
 
 Publisher.hasMany(Review, { foreignKey: 'publisher_id', as: 'reviews' });
 Review.belongsTo(Publisher, { foreignKey: 'publisher_id', as: 'publisher' });
@@ -61,6 +63,34 @@ Comment.hasMany(Comment, {
 Comment.belongsTo(Comment, {
     as: "parent",
     foreignKey: "parent_comment_id"
+});
+
+Comment.belongsToMany(User, {
+    through: CommentUser,
+    foreignKey: 'comment_id',
+    otherKey: 'user_id',
+    as: 'commentUsers' 
+});
+
+User.belongsToMany(Comment, {
+    through: CommentUser,
+    foreignKey: 'user_id',
+    otherKey: 'comment_id',
+    as: 'userComments'
+});
+
+Review.belongsToMany(User, {
+    through: ReviewUser,
+    foreignKey: 'review_id',
+    otherKey: 'user_id',
+    as: 'reviewUsers' 
+});
+
+User.belongsToMany(Review, {
+    through: ReviewUser,
+    foreignKey: 'user_id',
+    otherKey: 'review_id',
+    as: 'userReviews' 
 });
 
 module.exports = { Review, Publisher, Developer, Genre };

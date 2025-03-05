@@ -1,4 +1,5 @@
 const { Op } = require("sequelize");
+const { Sequelize } = require('sequelize');
 
 const GenreReview = require('../model/GenresReview');
 const PlatformReview = require('../model/PlatformReview');
@@ -11,6 +12,8 @@ const Section = require('../model/Section');
 
 const uploadImages = require("../middleware/uploadImagesCloudinary");
 const uploadFileToStorage = require("../middleware/uploadImagesToStorage");
+const ReviewUser = require("../model/ReviewUser");
+const User = require("../model/User");
 
 const getAllReviews = async (req, res) => {
     try {
@@ -67,6 +70,26 @@ const getAllReviews = async (req, res) => {
 const getReviewById = async (req, res) => {
     try {
         const { id } = req.params;
+        const username = req.user || '1';
+
+        const attributes = {
+            exclude: ['publisher_id', 'developer_id', 'publisherId', 'developerId'],
+            include: [
+                [Sequelize.fn('COUNT', Sequelize.col('reviewUsers.id')), 'userCount']
+            ]
+        };
+
+        if (username) {
+            attributes.include.push([
+                Sequelize.literal(`
+                    EXISTS (SELECT 1 FROM "review_users" INNER JOIN "users" 
+                    ON "users"."id" = "review_users"."user_id"
+                    WHERE "review_users"."review_id" = ${id} 
+                    AND "users"."username" = '${username}')
+                `),
+                'isUserInReview'
+            ]);
+        }
 
         const review = await Review.findByPk(id, {
             include: [
@@ -83,11 +106,16 @@ const getReviewById = async (req, res) => {
                     attributes: {
                         exclude: ['reviewId', 'review_id']
                     }
+                },
+                {
+                    model: User,
+                    as: 'reviewUsers',
+                    attributes: [],
+                    through: { attributes: [] }
                 }
             ],
-            attributes: {
-                exclude: ['publisher_id', 'developer_id', 'publisherId', 'developerId']
-            }
+            attributes,
+            group: ['Review.id', 'developer.id', 'publisher.id', 'genres.id', 'platforms.id', 'sections.id']
         });
 
         if (!review) {
@@ -479,14 +507,14 @@ const updateReview = async (req, res) => {
 
 const updateViews = async (req, res) => {
     try {
-        const { id } = req.params;        
+        const { id } = req.params;
 
         const review = await Review.findByPk(id);
 
         if (!review) {
             return res.status(404).json({ message: `Review with id ${id} not found` });
-        }   
-        
+        }
+
         review.views = Number(review.views) + 1;
 
         await review.save();
@@ -517,6 +545,34 @@ const deleteReview = async (req, res) => {
     }
 };
 
+const rateReview = async (req, res) => {
+    try {
+
+        const username = req.user || '1';
+        const user = await User.findOne({ where: { username } });
+        if (!user) {
+            return res.status(404).json({ 'message': `User is not found` });
+        }
+
+        const { id } = req.params;
+
+        const review = await Review.findByPk(id);
+
+        if (!review) {
+            return res.status(404).json({ message: `Review with id ${id} not found` });
+        }
+
+        const reviewUser = await ReviewUser.findOne({ where: { review_id: id, user_id: user.id } });
+
+        !reviewUser ? await ReviewUser.create({ review_id: id, user_id: user.id }) : await reviewUser.destroy();
+
+        return res.status(200).json(!reviewUser ? true : false);
+    } catch (err) {
+        console.error(`Error deleting reviewUser with id ${req.params.id}:`, err);
+        return res.status(500).json({ message: 'An error occurred while deleting the review.' });
+    }
+};
+
 module.exports = {
     getAllReviews,
     getReviewById,
@@ -526,5 +582,6 @@ module.exports = {
     getDLCsbyReviewId,
     getReviewHierarchy,
     getReviewsByGenres,
-    updateViews
+    updateViews,
+    rateReview
 }
