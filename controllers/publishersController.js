@@ -1,4 +1,5 @@
 const Publisher = require('../model/Publisher');
+const Review = require('../model/Review');
 
 const getAllPublishers = async (req, res) => {
     try {
@@ -42,6 +43,12 @@ const deletePublisher = async (req, res) => {
 
         if (!publisher) {
             return res.status(404).json({ message: `Publisher with id ${id} not found` });
+        }
+
+        const reviews = await Review.findAll({ where: { developerId: id } });
+
+        if (reviews.length > 0) {
+            return res.status(400).json({ message: `Publisher with id ${id} has associated reviews and cannot be deleted.` });
         }
 
         await publisher.destroy();

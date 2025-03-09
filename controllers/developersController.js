@@ -1,4 +1,5 @@
 const Developer = require('../model/Developer');
+const Review = require('../model/Review');
 
 const getAllDevelopers = async (req, res) => {
     try {
@@ -42,6 +43,12 @@ const deleteDeveloper = async (req, res) => {
 
         if (!developer) {
             return res.status(404).json({ message: `Developer with id ${id} not found` });
+        }
+
+        const reviews = await Review.findAll({ where: { developerId: id } });
+
+        if (reviews.length > 0) {
+            return res.status(400).json({ message: `Developer with id ${id} has associated reviews and cannot be deleted.` });
         }
 
         await developer.destroy();

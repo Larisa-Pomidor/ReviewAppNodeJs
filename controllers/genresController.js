@@ -1,4 +1,5 @@
 const Genre = require('../model/Genre');
+const GenresReview = require('../model/GenresReview');
 
 const getAllGenres = async (req, res) => {
     try {
@@ -44,6 +45,12 @@ const deleteGenre = async (req, res) => {
             return res.status(404).json({ message: `Genre with id ${id} not found` });
         }
 
+        const genresReviews = await GenresReview.findAll({ where: { genreId: id } });
+
+        if (genresReviews.length > 0) {
+            return res.status(400).json({ message: `Genre with id ${id} has associated reviews and cannot be deleted.` });
+        }
+
         await genre.destroy();
 
         return res.status(200).json({ message: `Genre with id ${id} deleted successfully` });
@@ -57,7 +64,7 @@ const addGenre = async (req, res) => {
     try {
         const { nameRu, nameEn, nameUk } = req.body;
 
-        if (!nameRu || !nameEn || nameUk) {
+        if (!nameRu || !nameEn || !nameUk) {
             return res.status(400)
                 .json({ message: 'Fields: nameRu, nameEn, or nameUk are required.' });
         }
@@ -80,7 +87,7 @@ const updateGenre = async (req, res) => {
         const { id } = req.params;
         const { nameRu, nameEn, nameUk } = req.body;
 
-        if (!nameRu && !nameEn && nameUk) {
+        if (!nameRu && !nameEn && !nameUk) {
             return res.status(400)
                 .json({ message: 'At least one change is required.' });
         }
