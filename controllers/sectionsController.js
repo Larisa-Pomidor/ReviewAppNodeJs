@@ -21,77 +21,114 @@ const getSectionsByReviewId = async (req, res) => {
 };
 
 const addSection = async (req, res) => {
-    const { id } = req.params;
+    uploadImages(req, res, async (err) => {
+        if (err) return res.status(400).json({ error: "Multer error" });
 
-    try {
-        const { nameRu, nameEn, nameUk, textRu, textEn, textUk, image } = req.body;
+        const { id } = req.params;
 
-        if (!nameRu || !nameEn || nameUk || !textRu || !textEn || !textUk) {
-            return res.status(400)
-                .json({ message: 'Fields: nameRu, nameEn, nameUk, textRu, textEn, textUk are required.' });
+        try {
+            const { nameRu, nameEn, nameUk, textRu, textEn, textUk } = req.body;
+
+            if (!nameRu || !nameEn || nameUk || !textRu || !textEn || !textUk) {
+                return res.status(400)
+                    .json({ message: 'Fields: nameRu, nameEn, nameUk, textRu, textEn, textUk are required.' });
+            }
+
+            const review = await Review.findByPk(id);
+            if (!review) {
+                return res.status(404).json({ message: `Review with id ${id} not found` });
+            }
+
+            let sectionImageUrl;
+
+            if (req.files.image) {
+                const fileExtensionSectionImage = req.files.image[0].mimetype.split("/")[1];
+                const fileNameSectionImage = `section-${Date.now()}.${fileExtensionSectionImage}`;
+
+                sectionImageUrl = await uploadFileToStorage(
+                    req.files.gamePoster[0].buffer,
+                    fileNameSectionImage,
+                    "sections",
+                    fileExtensionSectionImage
+                );
+            }
+
+            const newSection = await Section.create({
+                nameRu,
+                nameEn,
+                nameUk,
+                textRu,
+                textEn,
+                textUk,
+                ...(req.files.image && { image: sectionImageUrl })
+            });
+
+            return res.status(200).json(newSection);
+        } catch (err) {
+            console.error('Error adding new review:', err);
+            return res.status(500).json({ message: 'An error occurred while adding the review.' });
         }
-
-        const review = await Review.findByPk(id);
-        if (!review) {
-            return res.status(404).json({ message: `Review with id ${id} not found` });
-        }
-
-        const newSection = await Section.create({
-            nameRu,
-            nameEn, 
-            nameUk,
-            textRu,
-            textEn,
-            textUk,
-            ...(image && { image })
-        });
-
-        return res.status(200).json(newSection);
-    } catch (err) {
-        console.error('Error adding new review:', err);
-        return res.status(500).json({ message: 'An error occurred while adding the review.' });
-    }
+    });
 };
 
 const updateSection = async (req, res) => {
-    try {
-        const { reviewId } = req.params;
-        const { sectionId } = req.params;
-        
-        const { nameRu, nameEn, nameUk, textRu, textEn, textUk, image } = req.body;
+    uploadImages(req, res, async (err) => {
+        if (err) return res.status(400).json({ error: "Multer error" });
 
-        if (!nameRu && !nameEn && nameUk && !textRu && !textEn && !textUk) {
-            return res.status(400)
-                .json({ message: 'At least one of the fields: nameRu, nameEn, nameUk, textRu, textEn, textUk are required.' });
+        try {
+            const { reviewId } = req.params;
+            const { sectionId } = req.params;
+
+            const { nameRu, nameEn, nameUk, textRu, textEn, textUk } = req.body;
+
+            if (!nameRu && !nameEn && nameUk && !textRu && !textEn && !textUk) {
+                return res.status(400)
+                    .json({ message: 'At least one of the fields: nameRu, nameEn, nameUk, textRu, textEn, textUk are required.' });
+            }
+
+            const review = await Review.findByPk(reviewId);
+
+            if (!review) {
+                return res.status(404).json({ message: `Review with id ${reviewId} not found` });
+            }
+
+            const section = await Section.findByPk(sectionId);
+
+            if (!section) {
+                return res.status(404).json({ message: `Section with id ${sectionId} not found` });
+            }
+
+            let sectionImageUrl;
+
+            if (req.files.image) {
+                const fileExtensionSectionImage = req.files.image[0].mimetype.split("/")[1];
+                const fileNameSectionImage = `section-${Date.now()}.${fileExtensionSectionImage}`;
+
+                sectionImageUrl = await uploadFileToStorage(
+                    req.files.gamePoster[0].buffer,
+                    fileNameSectionImage,
+                    "sections",
+                    fileExtensionSectionImage
+                );
+
+                section.image = sectionImageUrl
+            }
+
+            if (nameRu) section.nameRu = nameRu;
+            if (nameEn) section.nameEn = nameEn;
+            if (nameUk) section.nameUk = nameUk;
+            if (textRu) section.textRu = textRu;
+            if (textEn) section.textEn = textEn;
+            if (textUk) section.textUk = textUk;
+
+            await section.save();
+
+            return res.status(200).json(section);
+        } catch (err) {
+            console.error(`Error updating section with id ${id}:`, err);
+            return res.status(500).json({ message: 'An error occurred while updating the section.' });
         }
-
-        const review = await Review.findByPk(reviewId);
-
-        if (!review) {
-            return res.status(404).json({ message: `Review with id ${reviewId} not found` });
-        }
-
-        const section = await Section.findByPk(sectionId);
-
-        if (!section) {
-            return res.status(404).json({ message: `Section with id ${sectionId} not found` });
-        }
-
-        if (nameRu) section.nameRu = nameRu;
-        if (nameEn) section.nameEn = nameEn;
-        if (nameUk) section.nameUk = nameUk;
-        if (textRu) section.textRu = textRu;
-        if (textEn) section.textEn = textEn;
-        if (textUk) section.textUk = textUk;
-        if (image) section.image = image;        
-
-        await section.save();
-
-        return res.status(200).json(section);
-    } catch (err) {
-        console.error(`Error updating section with id ${id}:`, err);
-        return res.status(500).json({ message: 'An error occurred while updating the section.' });
-    }
+    });
 };
 
 const deleteSection = async (req, res) => {

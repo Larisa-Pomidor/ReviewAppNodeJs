@@ -393,116 +393,148 @@ const addReview = async (req, res) => {
 };
 
 const updateReview = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { gameTitle, gamePoster, gameReleaseDate, adminRating,
-            developerId, publisherId, genreIds, platformIds } = req.body;
+    uploadImages(req, res, async (err) => {
+        if (err) return res.status(400).json({ error: "Multer error" });
 
-        if (
-            !gameTitle && !gamePoster && !gameReleaseDate && !adminRating &&
-            !developerId && !publisherId && !genreIds && !platformIds
-        ) {
-            return res.status(400).json({ message: 'At least one change is required.' });
-        }
+        try {
+            const { id } = req.params;
+            const { gameTitle, gameReleaseDate, adminRating,
+                developerId, publisherId, genreIds, platformIds } = req.body;
 
-        const review = await Review.findByPk(id);
-
-        if (!review) {
-            return res.status(404).json({ message: `Review with id ${id} not found` });
-        }
-
-        const fieldsToUpdate = {
-            gameTitle,
-            gamePoster,
-            gameReleaseDate,
-            adminRating,
-            developerId,
-            publisherId
-        };
-
-        Object.keys(fieldsToUpdate).forEach((field) => {
-            if (fieldsToUpdate[field]) review[field] = fieldsToUpdate[field];
-        });
-
-        if (genreIds) {
-            const existingGenres = await review.getGenres();
-
-            const genresToRemove = existingGenres.filter(
-                (genre) => !genreIds.includes(genre.id)
-            );
-
-            await Promise.all(
-                genresToRemove.map(async (genre) => {
-                    await review.removeGenre(genre);
-                })
-            );
-            const genres = await Genre.findAll({ where: { id: genreIds } });
-
-            if (genres.length !== genreIds.length) {
-                return res.status(404).json({ message: 'One or more genres not found' });
+            if (!gameTitle && !req.files.gamePoster && !req.files.gameThumbnail &&
+                !gameReleaseDate && !adminRating && !developerId && !publisherId && !genreIds && !platformIds
+            ) {
+                return res.status(400).json({ message: 'At least one change is required.' });
             }
 
-            await Promise.all(
-                genres.map(async (genre) => {
-                    await GenreReview.findOrCreate({
-                        where: { reviewId: review.id, genreId: genre.id },
-                        defaults: { reviewId: review.id, genreId: genre.id }
-                    });
-                })
-            );
-        }
+            const review = await Review.findByPk(id);
 
-        if (platformIds) {
-            const existingPlatforms = await review.getPlatforms();
-
-            const platformsToRemove = existingPlatforms.filter(
-                (platform) => !platformIds.includes(platform.id)
-            );
-
-            await Promise.all(
-                platformsToRemove.map(async (platform) => {
-                    await review.removePlatform(platform);
-                })
-            );
-
-            const platforms = await Platform.findAll({ where: { id: platformIds } });
-
-            if (platforms.length !== platformIds.length) {
-                return res.status(404).json({ message: 'One or more platforms not found' });
+            if (!review) {
+                return res.status(404).json({ message: `Review with id ${id} not found` });
             }
 
-            await Promise.all(
-                platforms.map(async (platform) => {
-                    await PlatformReview.findOrCreate({
-                        where: { reviewId: review.id, platformId: platform.id },
-                        defaults: { reviewId: review.id, platformId: platform.id }
-                    });
-                })
-            );
-        }
+            let gamePosterUrl;
 
-        await review.save();
+            if (req.files.gamePoster) {
+                const fileExtensionPoster = req.files.gamePoster[0].mimetype.split("/")[1];
+                const fileNamePoster = `gamePoster-${Date.now()}.${fileExtensionPoster}`;
 
-        const updatedReview = await Review.findByPk(review.id, {
-            include: [
-                { model: Genre, as: 'genres', through: { attributes: [] } },
-                { model: Platform, as: 'platforms', through: { attributes: [] } },
-                {
-                    model: Section, as: 'sections', attributes: {
-                        exclude: ['reviewId', 'review_id']
-                    }
+                gamePosterUrl = await uploadFileToStorage(
+                    req.files.gamePoster[0].buffer,
+                    fileNamePoster,
+                    "gamePosters",
+                    req.files.gamePoster[0].mimetype
+                );
+            }
+
+            let gameThumbnailUrl;
+
+            if (req.files.gameThumbnail) {
+                const fileExtensionThumbnail = req.files.gameThumbnail[0].mimetype.split("/")[1];
+                const fileNameThumbnail = `gameThumbnail-${Date.now()}.${fileExtensionThumbnail}`;
+
+                gameThumbnailUrl = await uploadFileToStorage(
+                    req.files.gameThumbnail[0].buffer,
+                    fileNameThumbnail,
+                    "gameThumbnails",
+                    req.files.gameThumbnail[0].mimetype
+                );
+            }
+
+            const fieldsToUpdate = {
+                gameTitle,
+                ...(req.files.gamePoster && { gamePoster: gamePosterUrl }),
+                ...(req.files.gameThumbnail && { gamePoster: gameThumbnailUrl }),
+                gameReleaseDate,
+                adminRating,
+                developerId,
+                publisherId
+            };
+
+            Object.keys(fieldsToUpdate).forEach((field) => {
+                if (fieldsToUpdate[field]) review[field] = fieldsToUpdate[field];
+            });
+
+            if (genreIds) {
+                const existingGenres = await review.getGenres();
+
+                const genresToRemove = existingGenres.filter(
+                    (genre) => !genreIds.includes(genre.id)
+                );
+
+                await Promise.all(
+                    genresToRemove.map(async (genre) => {
+                        await review.removeGenre(genre);
+                    })
+                );
+                const genres = await Genre.findAll({ where: { id: genreIds } });
+
+                if (genres.length !== genreIds.length) {
+                    return res.status(404).json({ message: 'One or more genres not found' });
                 }
-            ],
-            attributes: {
-                exclude: ['publisher_id', 'developer_id', 'publisherId', 'developerId']
-            }
-        });
 
-        return res.status(200).json(updatedReview);
-    } catch (err) {
-        console.error(`Error updating review with id ${id}:`, err);
-        return res.status(500).json({ message: 'An error occurred while updating the review.' });
-    }
+                await Promise.all(
+                    genres.map(async (genre) => {
+                        await GenreReview.findOrCreate({
+                            where: { reviewId: review.id, genreId: genre.id },
+                            defaults: { reviewId: review.id, genreId: genre.id }
+                        });
+                    })
+                );
+            }
+
+            if (platformIds) {
+                const existingPlatforms = await review.getPlatforms();
+
+                const platformsToRemove = existingPlatforms.filter(
+                    (platform) => !platformIds.includes(platform.id)
+                );
+
+                await Promise.all(
+                    platformsToRemove.map(async (platform) => {
+                        await review.removePlatform(platform);
+                    })
+                );
+
+                const platforms = await Platform.findAll({ where: { id: platformIds } });
+
+                if (platforms.length !== platformIds.length) {
+                    return res.status(404).json({ message: 'One or more platforms not found' });
+                }
+
+                await Promise.all(
+                    platforms.map(async (platform) => {
+                        await PlatformReview.findOrCreate({
+                            where: { reviewId: review.id, platformId: platform.id },
+                            defaults: { reviewId: review.id, platformId: platform.id }
+                        });
+                    })
+                );
+            }
+
+            await review.save();
+
+            const updatedReview = await Review.findByPk(review.id, {
+                include: [
+                    { model: Genre, as: 'genres', through: { attributes: [] } },
+                    { model: Platform, as: 'platforms', through: { attributes: [] } },
+                    {
+                        model: Section, as: 'sections', attributes: {
+                            exclude: ['reviewId', 'review_id']
+                        }
+                    }
+                ],
+                attributes: {
+                    exclude: ['publisher_id', 'developer_id', 'publisherId', 'developerId']
+                }
+            });
+
+            return res.status(200).json(updatedReview);
+        } catch (err) {
+            console.error(`Error updating review with id ${id}:`, err);
+            return res.status(500).json({ message: 'An error occurred while updating the review.' });
+        }
+    });
 };
 
 const updateViews = async (req, res) => {
