@@ -186,56 +186,8 @@ router.route('/:id')
     .delete(reviewsController.deleteReview)
     .put(reviewsController.updateReview);
 
-/**
- * @swagger
- * /reviews/{reviewId}/sections/{sectionId}:
- *   put:
- *     summary: Update section by section ID and review ID
- *     parameters:
- *       - in: path
- *         name: reviewId
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID of the review
- *       - in: path
- *         name: sectionId
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID of the section
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *                 description: The name of the section
- *               title:
- *                 type: string
- *                 description: The title of the section
- *               image:
- *                 type: string
- *                 format: uri
- *                 description: URL of the section image
- *             minProperties: 1
- *     responses:
- *       200:
- *         description: Section updated successfully
- *       204:
- *         description: No content, nothing updated
- *       400: 
- *         description: At least one change is required
- *       404: 
- *         description: Review with {reviewId} not found
- *       500:
- *         description: An unexpected error occurred while updating the section.
- */
-router.route('/:reviewId/sections/:sectionId')
-    .put(sectionsController.updateSection)
+router.route('/:id/sections')
+    .post(sectionsController.addSection)
 
 /**
 * @swagger

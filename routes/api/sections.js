@@ -6,7 +6,7 @@ const verifyRoles = require('../../middleware/verifyRoles');
 
 router.route('/:id')
     .get(sectionsController.getSectionsByReviewId)
-    .delete(sectionsController.addSection)
-    .put(sectionsController.addSection);
+    .delete(sectionsController.deleteSection)
+    .put(sectionsController.updateSection)
 
 module.exports = router;

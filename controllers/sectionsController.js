@@ -27,7 +27,7 @@ const addSection = async (req, res) => {
         const { id } = req.params;
 
         try {
-            const { nameRu, nameEn, nameUk, textRu, textEn, textUk } = req.body;
+            const { nameRu, nameEn, nameUk, textRu, textEn, textUk, isSummary } = req.body;
 
             if (!nameRu || !nameEn || nameUk || !textRu || !textEn || !textUk) {
                 return res.status(400)
@@ -60,7 +60,9 @@ const addSection = async (req, res) => {
                 textRu,
                 textEn,
                 textUk,
-                ...(req.files.image && { image: sectionImageUrl })
+                ...(req.files.image && { image: sectionImageUrl }),
+                isSummary: isSummary || false,
+                reviewId: id
             });
 
             return res.status(200).json(newSection);
@@ -76,26 +78,19 @@ const updateSection = async (req, res) => {
         if (err) return res.status(400).json({ error: "Multer error" });
 
         try {
-            const { reviewId } = req.params;
-            const { sectionId } = req.params;
+            const { id } = req.params;
 
-            const { nameRu, nameEn, nameUk, textRu, textEn, textUk } = req.body;
+            const { nameRu, nameEn, nameUk, textRu, textEn, textUk, isSummary } = req.body;
 
-            if (!nameRu && !nameEn && nameUk && !textRu && !textEn && !textUk) {
+            if (!nameRu && !nameEn && nameUk && !textRu && !textEn && !textUk && !isSummary) {
                 return res.status(400)
                     .json({ message: 'At least one of the fields: nameRu, nameEn, nameUk, textRu, textEn, textUk are required.' });
             }
 
-            const review = await Review.findByPk(reviewId);
-
-            if (!review) {
-                return res.status(404).json({ message: `Review with id ${reviewId} not found` });
-            }
-
-            const section = await Section.findByPk(sectionId);
+            const section = await Section.findByPk(id);
 
             if (!section) {
-                return res.status(404).json({ message: `Section with id ${sectionId} not found` });
+                return res.status(404).json({ message: `Section with id ${id} not found` });
             }
 
             let sectionImageUrl;
@@ -120,6 +115,7 @@ const updateSection = async (req, res) => {
             if (textRu) section.textRu = textRu;
             if (textEn) section.textEn = textEn;
             if (textUk) section.textUk = textUk;
+            if (isSummary) section.isSummary = isSummary;
 
             await section.save();
 
