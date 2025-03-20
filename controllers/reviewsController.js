@@ -396,8 +396,9 @@ const updateReview = async (req, res) => {
     uploadImages(req, res, async (err) => {
         if (err) return res.status(400).json({ error: "Multer error" });
 
-        try {
-            const { id } = req.params;
+        const { id } = req.params;
+
+        try {            
             const { gameTitle, gameReleaseDate, adminRating,
                 developerId, publisherId, genreIds, platformIds } = req.body;
 
