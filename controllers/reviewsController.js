@@ -355,6 +355,7 @@ const addReview = async (req, res) => {
             });
 
             if (genreIds && genreIds.length > 0) {
+                genreIds = genreIds.split(",").map(Number);
                 const genres = await Genre.findAll({ where: { id: genreIds } });
                 if (genres.length !== genreIds.length) return res.status(404).json({ message: "One or more genres not found" });
 
@@ -366,6 +367,7 @@ const addReview = async (req, res) => {
             }
 
             if (platformIds && platformIds.length > 0) {
+                platformIds = platformIds.split(",").map(Number);
                 const platforms = await Platform.findAll({ where: { id: platformIds } });
                 if (platforms.length !== platformIds.length) return res.status(404).json({ message: "One or more platforms not found" });
 
@@ -457,6 +459,8 @@ const updateReview = async (req, res) => {
             });
 
             if (genreIds) {
+
+                genreIds = genreIds.split(",").map(Number);
                 const existingGenres = await review.getGenres();
 
                 const genresToRemove = existingGenres.filter(
@@ -485,6 +489,7 @@ const updateReview = async (req, res) => {
             }
 
             if (platformIds) {
+                platformIds = platformIds.split(",").map(Number);
                 const existingPlatforms = await review.getPlatforms();
 
                 const platformsToRemove = existingPlatforms.filter(
