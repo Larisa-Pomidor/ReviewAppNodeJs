@@ -312,7 +312,8 @@ const addReview = async (req, res) => {
         if (err) return res.status(400).json({ error: "Multer error" });
 
         try {
-            const { gameTitle, gameReleaseDate, adminRating, developerId, publisherId, genreIds, platformIds } = req.body;
+            const { gameTitle, gameReleaseDate, adminRating, developerId, publisherId } = req.body;
+            let { genreIds, platformIds } = req.body;
 
             if (!gameTitle || !req.files.gamePoster || !req.files.gameThumbnail || !gameReleaseDate || !adminRating || !developerId || !publisherId) {
                 return res.status(400).json({ message: "Missing required fields" });
@@ -400,7 +401,7 @@ const updateReview = async (req, res) => {
 
         const { id } = req.params;
 
-        try {            
+        try {
             const { gameTitle, gameReleaseDate, adminRating,
                 developerId, publisherId, genreIds, platformIds } = req.body;
 
