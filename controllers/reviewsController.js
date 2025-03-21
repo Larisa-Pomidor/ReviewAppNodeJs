@@ -403,7 +403,9 @@ const updateReview = async (req, res) => {
 
         try {
             const { gameTitle, gameReleaseDate, adminRating,
-                developerId, publisherId, genreIds, platformIds } = req.body;
+                developerId, publisherId } = req.body;
+
+            let { genreIds, platformIds } = req.body;
 
             if (!gameTitle && !req.files.gamePoster && !req.files.gameThumbnail &&
                 !gameReleaseDate && !adminRating && !developerId && !publisherId && !genreIds && !platformIds
