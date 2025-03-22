@@ -457,7 +457,7 @@ const updateReview = async (req, res) => {
             const fieldsToUpdate = {
                 gameTitle,
                 ...(gamePosterFile && { gamePoster: gamePosterUrl }),
-                ...(gamePosterUrl && { gamePoster: gameThumbnailUrl }),
+                ...(gameThumbnailFile && { gameThumbnail: gameThumbnailUrl }),
                 gameReleaseDate,
                 adminRating,
                 developerId,
