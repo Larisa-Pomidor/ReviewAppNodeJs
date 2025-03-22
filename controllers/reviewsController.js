@@ -315,7 +315,11 @@ const addReview = async (req, res) => {
             const { gameTitle, gameReleaseDate, adminRating, developerId, publisherId } = req.body;
             let { genreIds, platformIds } = req.body;
 
-            if (!gameTitle || !req.files.gamePoster || !req.files.gameThumbnail || !gameReleaseDate || !adminRating || !developerId || !publisherId) {
+            const gamePosterFile = req.files.find(file => file.fieldname === 'gamePoster');
+            const gameThumbnailFile = req.files.find(file => file.fieldname === 'gameThumbnail');
+
+            if (!gameTitle || !gamePosterFile || !gameThumbnailFile || !gameReleaseDate
+                || !adminRating || !developerId || !publisherId) {
                 return res.status(400).json({ message: "Missing required fields" });
             }
 
@@ -325,24 +329,24 @@ const addReview = async (req, res) => {
             const publisher = await Publisher.findByPk(publisherId);
             if (!publisher) return res.status(404).json({ message: `Publisher with id ${publisherId} not found` });
 
-            const fileExtensionPoster = req.files.gameThumbnail[0].mimetype.split("/")[1];
+            const fileExtensionPoster = gamePosterFile.mimetype.split("/")[1];
             const fileNamePoster = `gamePoster-${Date.now()}.${fileExtensionPoster}`;
 
             const gamePosterUrl = await uploadFileToStorage(
-                req.files.gamePoster[0].buffer,
+                gamePosterFile.buffer,
                 fileNamePoster,
                 "gamePosters",
-                req.files.gamePoster[0].mimetype
+                gamePosterFile.mimetype
             );
 
-            const fileExtensionThumbnail = req.files.gameThumbnail[0].mimetype.split("/")[1];
+            const fileExtensionThumbnail = gameThumbnailFile.mimetype.split("/")[1];
             const fileNameThumbnail = `gameThumbnail-${Date.now()}.${fileExtensionThumbnail}`;
 
             const gameThumbnailUrl = await uploadFileToStorage(
-                req.files.gameThumbnail[0].buffer,
+                gameThumbnailFile.buffer,
                 fileNameThumbnail,
                 "gameThumbnails",
-                req.files.gameThumbnail[0].mimetype
+                gameThumbnailFile.mimetype
             );
 
             const newReview = await Review.create({
@@ -407,7 +411,10 @@ const updateReview = async (req, res) => {
 
             let { genreIds, platformIds } = req.body;
 
-            if (!gameTitle && !req.files.gamePoster && !req.files.gameThumbnail &&
+            const gamePosterFile = req.files.find(file => file.fieldname === 'gamePoster');
+            const gameThumbnailFile = req.files.find(file => file.fieldname === 'gameThumbnail');
+
+            if (!gameTitle && !gamePosterFile && !gameThumbnailFile &&
                 !gameReleaseDate && !adminRating && !developerId && !publisherId && !genreIds && !platformIds
             ) {
                 return res.status(400).json({ message: 'At least one change is required.' });
@@ -421,36 +428,36 @@ const updateReview = async (req, res) => {
 
             let gamePosterUrl;
 
-            if (req.files.gamePoster) {
-                const fileExtensionPoster = req.files.gamePoster[0].mimetype.split("/")[1];
+            if (gamePosterFile) {
+                const fileExtensionPoster = gamePosterFile.mimetype.split("/")[1];
                 const fileNamePoster = `gamePoster-${Date.now()}.${fileExtensionPoster}`;
 
                 gamePosterUrl = await uploadFileToStorage(
-                    req.files.gamePoster[0].buffer,
+                    gamePosterFile.buffer,
                     fileNamePoster,
                     "gamePosters",
-                    req.files.gamePoster[0].mimetype
+                    gamePosterFile.mimetype
                 );
             }
 
             let gameThumbnailUrl;
 
-            if (req.files.gameThumbnail) {
-                const fileExtensionThumbnail = req.files.gameThumbnail[0].mimetype.split("/")[1];
+            if (gameThumbnailFile) {
+                const fileExtensionThumbnail = gameThumbnailFile.mimetype.split("/")[1];
                 const fileNameThumbnail = `gameThumbnail-${Date.now()}.${fileExtensionThumbnail}`;
 
                 gameThumbnailUrl = await uploadFileToStorage(
-                    req.files.gameThumbnail[0].buffer,
+                    gameThumbnailFile.buffer,
                     fileNameThumbnail,
                     "gameThumbnails",
-                    req.files.gameThumbnail[0].mimetype
+                    gameThumbnailFile.mimetype
                 );
             }
 
             const fieldsToUpdate = {
                 gameTitle,
-                ...(req.files.gamePoster && { gamePoster: gamePosterUrl }),
-                ...(req.files.gameThumbnail && { gamePoster: gameThumbnailUrl }),
+                ...(gamePosterFile && { gamePoster: gamePosterUrl }),
+                ...(gamePosterUrl && { gamePoster: gameThumbnailUrl }),
                 gameReleaseDate,
                 adminRating,
                 developerId,

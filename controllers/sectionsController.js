@@ -41,12 +41,12 @@ const addSection = async (req, res) => {
 
             let sectionImageUrl;
 
-            if (req.files.image) {
-                const fileExtensionSectionImage = req.files.image[0].mimetype.split("/")[1];
+            if (req.files[0]) {
+                const fileExtensionSectionImage = req.files[0].mimetype.split("/")[1];
                 const fileNameSectionImage = `section-${Date.now()}.${fileExtensionSectionImage}`;
 
                 sectionImageUrl = await uploadFileToStorage(
-                    req.files.gamePoster[0].buffer,
+                    req.files[0].buffer,
                     fileNameSectionImage,
                     "sections",
                     fileExtensionSectionImage
@@ -95,12 +95,12 @@ const updateSection = async (req, res) => {
 
             let sectionImageUrl;
 
-            if (req.files.image) {
-                const fileExtensionSectionImage = req.files.image[0].mimetype.split("/")[1];
+            if (req.files[0]) {
+                const fileExtensionSectionImage = req.files[0].mimetype.split("/")[1];
                 const fileNameSectionImage = `section-${Date.now()}.${fileExtensionSectionImage}`;
 
                 sectionImageUrl = await uploadFileToStorage(
-                    req.files.gamePoster[0].buffer,
+                    req.files[0].buffer,
                     fileNameSectionImage,
                     "sections",
                     fileExtensionSectionImage
