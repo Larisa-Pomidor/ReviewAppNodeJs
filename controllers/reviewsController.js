@@ -599,6 +599,13 @@ const deleteReview = async (req, res) => {
             })
         );
 
+        const sections = await Section.findAll({ where: { reviewId: id } });
+        await Promise.all(
+            sections.map(async (item) => {
+                await item.destroy();
+            })
+        );
+
         await review.destroy();
 
         return res.status(200).json({ message: `Review with id ${id} deleted successfully` });

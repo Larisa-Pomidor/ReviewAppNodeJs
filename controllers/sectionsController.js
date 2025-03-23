@@ -1,6 +1,9 @@
 const Review = require('../model/Review');
 const Section = require('../model/Section');
 
+const uploadImages = require("../middleware/uploadImagesCloudinary");
+const uploadFileToStorage = require("../middleware/uploadImagesToStorage");
+
 const getSectionsByReviewId = async (req, res) => {
     const { id } = req.params;
 
@@ -41,7 +44,7 @@ const addSection = async (req, res) => {
 
             let sectionImageUrl;
 
-            if (req.files[0]) {
+            if (req.files && req.files[0]) {
                 const fileExtensionSectionImage = req.files[0].mimetype.split("/")[1];
                 const fileNameSectionImage = `section-${Date.now()}.${fileExtensionSectionImage}`;
 
@@ -76,9 +79,9 @@ const addSection = async (req, res) => {
 const updateSection = async (req, res) => {
     uploadImages(req, res, async (err) => {
         if (err) return res.status(400).json({ error: "Multer error" });
+        const { id } = req.params;
 
         try {
-            const { id } = req.params;
 
             const { nameRu, nameEn, nameUk, textRu, textEn, textUk, isSummary } = req.body;
 
@@ -95,7 +98,7 @@ const updateSection = async (req, res) => {
 
             let sectionImageUrl;
 
-            if (req.files[0]) {
+            if (req.files && req.files[0]) {
                 const fileExtensionSectionImage = req.files[0].mimetype.split("/")[1];
                 const fileNameSectionImage = `section-${Date.now()}.${fileExtensionSectionImage}`;
 

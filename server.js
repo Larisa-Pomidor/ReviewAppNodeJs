@@ -73,6 +73,7 @@ app.use('/developers', require('./routes/api/developers'));
 app.use('/genres', require('./routes/api/genres'));
 app.use('/comments', require('./routes/api/comments'));
 app.use('/platforms', require('./routes/api/platforms'));
+app.use('/sections', require('./routes/api/sections'));
 
 // Protected Routes
 
