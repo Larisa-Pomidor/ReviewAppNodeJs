@@ -357,7 +357,7 @@ const addReview = async (req, res) => {
                 adminRating,
                 developerId,
                 publisherId,
-                view: 0
+                views: 0
             });
 
             if (genreIds && genreIds.length > 0) {
