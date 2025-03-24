@@ -35,7 +35,7 @@ const Section = sequelize.define('Section', {
     },  
     image: {
         type: DataTypes.DATE,
-        allowNull: false,
+        allowNull: true,
     },
     isSummary: {
         type: DataTypes.BOOLEAN,

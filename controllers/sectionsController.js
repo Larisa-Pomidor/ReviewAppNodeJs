@@ -32,7 +32,7 @@ const addSection = async (req, res) => {
         try {
             const { nameRu, nameEn, nameUk, textRu, textEn, textUk, isSummary } = req.body;
 
-            if (!nameRu || !nameEn || nameUk || !textRu || !textEn || !textUk) {
+            if (!nameRu || !nameEn || !nameUk || !textRu || !textEn || !textUk) {
                 return res.status(400)
                     .json({ message: 'Fields: nameRu, nameEn, nameUk, textRu, textEn, textUk are required.' });
             }
@@ -63,7 +63,7 @@ const addSection = async (req, res) => {
                 textRu,
                 textEn,
                 textUk,
-                ...(req.files.image && { image: sectionImageUrl }),
+                ...(req.files && { image: sectionImageUrl }),
                 isSummary: isSummary || false,
                 reviewId: id
             });
