@@ -34,7 +34,7 @@ const Section = sequelize.define('Section', {
         field: 'text_uk'
     },  
     image: {
-        type: DataTypes.DATE,
+        type: DataTypes.STRING,
         allowNull: true,
     },
     isSummary: {
