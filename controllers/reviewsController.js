@@ -315,7 +315,9 @@ const addReview = async (req, res) => {
         if (err) return res.status(400).json({ error: "Multer error" });
 
         try {
-            const { gameTitle, gameReleaseDate, adminRating, developerId, publisherId } = req.body;
+            const { gameTitle, gameReleaseDate, adminRating, developerId,
+                publisherId, reviewParentId, dlcParentId } = req.body;
+
             let { genreIds, platformIds } = req.body;
 
             const gamePosterFile = req.files.find(file => file.fieldname === 'gamePoster');
@@ -360,6 +362,8 @@ const addReview = async (req, res) => {
                 adminRating,
                 developerId,
                 publisherId,
+                ...(reviewParentId && { reviewParentId }),
+                ...(dlcParentId && { dlcParentId }),
                 views: 0
             });
 
