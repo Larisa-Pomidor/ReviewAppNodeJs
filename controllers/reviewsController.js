@@ -415,14 +415,14 @@ const updateReview = async (req, res) => {
 
         try {
             const { gameTitle, gameReleaseDate, adminRating,
-                developerId, publisherId } = req.body;
+                developerId, publisherId, reviewParentId, dlcParentId } = req.body;
 
             let { genreIds, platformIds } = req.body;
 
             const gamePosterFile = req.files.find(file => file.fieldname === 'gamePoster');
             const gameThumbnailFile = req.files.find(file => file.fieldname === 'gameThumbnail');
 
-            if (!gameTitle && !gamePosterFile && !gameThumbnailFile &&
+            if (!gameTitle && !gamePosterFile && !gameThumbnailFile && !reviewParentId && !dlcParentId &&
                 !gameReleaseDate && !adminRating && !developerId && !publisherId && !genreIds && !platformIds
             ) {
                 return res.status(400).json({ message: 'At least one change is required.' });
@@ -469,7 +469,9 @@ const updateReview = async (req, res) => {
                 gameReleaseDate,
                 adminRating,
                 developerId,
-                publisherId
+                publisherId,
+                ...(reviewParentId && { reviewParentId }),
+                ...(dlcParentId && { dlcParentId }),
             };
 
             Object.keys(fieldsToUpdate).forEach((field) => {
