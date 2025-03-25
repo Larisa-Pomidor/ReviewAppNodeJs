@@ -55,7 +55,17 @@ const addSection = async (req, res) => {
                     fileExtensionSectionImage
                 );
             }
-
+            console.log(sectionImageUrl, req.files, {
+                nameRu,
+                nameEn,
+                nameUk,
+                textRu,
+                textEn,
+                textUk,
+                ...(req.files && { image: sectionImageUrl }),
+                isSummary: isSummary || false,
+                reviewId: id
+            })
             const newSection = await Section.create({
                 nameRu,
                 nameEn,

@@ -43,9 +43,12 @@ const getAllReviews = async (req, res) => {
 
         let totalReviews = await Review.count();
 
-        if (!isNaN(pageNumber) && !isNaN(limitNumber)) {
-            reviewsQuery.offset = (pageNumber - 1) * limitNumber;
+        if (!isNaN(limitNumber)) {
             reviewsQuery.limit = limitNumber;
+        }
+
+        if (!isNaN(limitNumber) && !isNaN(pageNumber)) {
+            reviewsQuery.offset = (pageNumber - 1) * limitNumber;
         }
 
         const reviews = await Review.findAll(reviewsQuery);
