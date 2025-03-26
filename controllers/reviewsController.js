@@ -467,21 +467,15 @@ const updateReview = async (req, res) => {
                 );
             }
 
-            const fieldsToUpdate = {
-                gameTitle,
-                ...(gamePosterFile && { gamePoster: gamePosterUrl }),
-                ...(gameThumbnailFile && { gameThumbnail: gameThumbnailUrl }),
-                gameReleaseDate,
-                adminRating,
-                developerId,
-                publisherId,
-                ...(reviewParentId !== undefined && { reviewParentId }),
-                ...(dlcParentId !== undefined && { dlcParentId }),
-            };
-
-            Object.keys(fieldsToUpdate).forEach((field) => {
-                if (fieldsToUpdate[field]) review[field] = fieldsToUpdate[field];
-            });
+            if (gameTitle) review.gameTitle = gameTitle;
+            if (gameReleaseDate) review.gameReleaseDate = gameReleaseDate;
+            if (adminRating) review.adminRating = adminRating;
+            if (developerId) review.developerId = developerId;
+            if (publisherId) review.publisherId = publisherId;
+            if (gamePosterFile) review.gamePoster = gamePosterUrl;
+            if (gameThumbnailFile) review.gameThumbnail = gameThumbnailUrl;
+            if (reviewParentId !== undefined) review.reviewParentId = reviewParentId;
+            if (dlcParentId !== undefined) review.dlcParentId = dlcParentId;
 
             if (genreIds) {
 
