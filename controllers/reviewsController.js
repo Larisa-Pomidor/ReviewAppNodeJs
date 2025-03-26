@@ -415,7 +415,9 @@ const updateReview = async (req, res) => {
 
         try {
             const { gameTitle, gameReleaseDate, adminRating,
-                developerId, publisherId, reviewParentId, dlcParentId } = req.body;
+                developerId, publisherId } = req.body;
+
+            let { reviewParentId, dlcParentId } = req.body;
 
             if (reviewParentId === "null") reviewParentId = null;
             if (dlcParentId === "null") dlcParentId = null;
