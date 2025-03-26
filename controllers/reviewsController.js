@@ -417,6 +417,9 @@ const updateReview = async (req, res) => {
             const { gameTitle, gameReleaseDate, adminRating,
                 developerId, publisherId, reviewParentId, dlcParentId } = req.body;
 
+            if (reviewParentId === "null") reviewParentId = null;
+            if (dlcParentId === "null") dlcParentId = null;
+
             let { genreIds, platformIds } = req.body;
 
             const gamePosterFile = req.files.find(file => file.fieldname === 'gamePoster');
@@ -470,8 +473,8 @@ const updateReview = async (req, res) => {
                 adminRating,
                 developerId,
                 publisherId,
-                ...(reviewParentId && { reviewParentId }),
-                ...(dlcParentId && { dlcParentId }),
+                ...(reviewParentId !== undefined && { reviewParentId }),
+                ...(dlcParentId !== undefined && { dlcParentId }),
             };
 
             Object.keys(fieldsToUpdate).forEach((field) => {

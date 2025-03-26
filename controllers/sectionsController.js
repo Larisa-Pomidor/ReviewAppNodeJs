@@ -93,7 +93,7 @@ const updateSection = async (req, res) => {
 
         try {
 
-            const { nameRu, nameEn, nameUk, textRu, textEn, textUk, isSummary } = req.body;
+            const { nameRu, nameEn, nameUk, textRu, textEn, textUk, isSummary, removeImage } = req.body;
 
             if (!nameRu && !nameEn && nameUk && !textRu && !textEn && !textUk && !isSummary) {
                 return res.status(400)
@@ -108,18 +108,23 @@ const updateSection = async (req, res) => {
 
             let sectionImageUrl;
 
-            if (req.files && req.files[0]) {
-                const fileExtensionSectionImage = req.files[0].mimetype.split("/")[1];
-                const fileNameSectionImage = `section-${Date.now()}.${fileExtensionSectionImage}`;
+            if (removeImage !== "true") {               
 
-                sectionImageUrl = await uploadFileToStorage(
-                    req.files[0].buffer,
-                    fileNameSectionImage,
-                    "sections",
-                    fileExtensionSectionImage
-                );
+                if (req.files && req.files[0]) {
+                    const fileExtensionSectionImage = req.files[0].mimetype.split("/")[1];
+                    const fileNameSectionImage = `section-${Date.now()}.${fileExtensionSectionImage}`;
 
-                section.image = sectionImageUrl
+                    sectionImageUrl = await uploadFileToStorage(
+                        req.files[0].buffer,
+                        fileNameSectionImage,
+                        "sections",
+                        fileExtensionSectionImage
+                    );
+
+                    section.image = sectionImageUrl
+                }
+            } else {
+                section.image = null;
             }
 
             if (nameRu) section.nameRu = nameRu;
