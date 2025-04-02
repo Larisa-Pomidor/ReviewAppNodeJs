@@ -5,14 +5,16 @@ const ROLES_LIST = require('../../config/roles_list');
 const verifyRoles = require('../../middleware/verifyRoles');
 
 router.route('/')
-    .get(verifyRoles(ROLES_LIST.Admin), usersController.getAllUsers)
-    .put(verifyRoles(ROLES_LIST.User), usersController.updateUser)
+    .get(usersController.getAllUsers)
+    .put(usersController.updateUser)
 
 router.route('/profile')
-    .get(verifyRoles(ROLES_LIST.User), usersController.getUserInfo)
+    .get(usersController.getUserInfo)
 
-router.route('/:id')
-    .get(verifyRoles(ROLES_LIST.Admin), usersController.getUser)
-    .put(verifyRoles(ROLES_LIST.Admin), usersController.banUser);
+router.route('/:username')
+    .get(usersController.getUser)
+
+router.route('/ban/:username')
+    .put(usersController.banUser);
 
 module.exports = router;

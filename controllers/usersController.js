@@ -4,28 +4,46 @@ const uploadImages = require("../middleware/uploadImagesCloudinary");
 const uploadFileToStorage = require("../middleware/uploadImagesToStorage");
 
 const getAllUsers = async (req, res) => {
-    const users = await User.find();
-    if (!users) return res.status(204).json({ 'message': 'No users found' });
-    res.json(users);
+    try {
+        const users = await User.findAll();
+        if (!users) return res.status(204).json({ 'message': 'No users found' });
+        res.json(users);
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        return res.status(500).json({ message: "An error occurred while fetching users." });
+    }
 }
 
-const deleteUser = async (req, res) => {
-    if (!req?.body?.id) return res.status(400).json({ "message": 'User ID required' });
-    const user = await User.findOne({ where: { _id: req.body.id } });
-    if (!user) {
-        return res.status(204).json({ 'message': `User ID ${req.body.id} not found` });
-    }
-    const result = await user.deleteOne({ _id: req.body.id });
-    res.json(result);
-}
+// const deleteUser = async (req, res) => {
+//     try {
+//         const username = req.user;
+//         const user = await User.findOne({ where: { username } });
+//         if (!user) {
+//             return res.status(404).json({ 'message': `User is not found` });
+//         }
+
+//         user.isDeleted = !user.isDeleted;
+//         await user.save();
+//         res.json(user);
+//     } catch (error) {
+//         console.error("Error deleting user:", error);
+//         return res.status(500).json({ message: "An error occurred while deleting the user." });
+//     }
+// }
 
 const getUser = async (req, res) => {
-    if (!req?.params?.id) return res.status(400).json({ "message": 'User ID required' });
-    const user = await User.findOne({ where: { _id: req.params.id } });
-    if (!user) {
-        return res.status(204).json({ 'message': `User ID ${req.params.id} not found` });
+    try {
+        if (!req?.params?.username) return res.status(400).json({ "message": 'User ID required' });
+
+        const user = await User.findOne({ where: { username: req?.params?.username } });
+        if (!user) {
+            return res.status(204).json({ 'message': `User ID ${req.params.username} not found` });
+        }
+        return res.json(user);
+    } catch (error) {
+        console.error("Error fetching user's info:", error);
+        return res.status(500).json({ message: "An error occurred while fetching user's info." });
     }
-    return res.json(user);
 }
 
 const getUserInfo = async (req, res) => {
@@ -88,14 +106,21 @@ const updateUser = async (req, res) => {
 }
 
 const banUser = async (req, res) => {
-    if (!req?.params?.id) return res.status(400).json({ "message": 'User ID required' });
-    const user = await User.findOne({ where: { _id: req.params.id } });
-    if (!user) {
-        return res.status(204).json({ 'message': `User ID ${req.params.id} not found` });
+    try {
+        if (!req?.params?.username) return res.status(400).json({ "message": 'User username required' });
+        const user = await User.findOne({ where: { username: req?.params?.username } });
+
+        if (!user) {
+            return res.status(204).json({ 'message': `User username ${!req?.params?.username} not found` });
+        }
+        user.isBanned = !user.isBanned;
+        await user.save();
+        res.json(user);
     }
-    user.isBanned = !user.isBanned;
-    await user.save();
-    res.json(user);
+    catch (error) {
+        console.error("Error updating user's status:", error);
+        return res.status(500).json({ message: "An error occurred while updating user's status." });
+    }
 }
 
 module.exports = {
