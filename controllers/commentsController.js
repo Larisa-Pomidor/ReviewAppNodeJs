@@ -138,14 +138,15 @@ const addCommentByReviewId = async (req, res) => {
         });
 
         const createdComment = await Comment.findByPk(
-            newComment.id,
-            {
-                attributes: {
-                    exclude: ['parent_comment_id', 'parentCommentId']
-                }
-            });
+            newComment.id
+        );
 
-        return res.status(200).json(createdComment);
+        return res.status(200).json({
+            ...createdComment.get({ plain: true }),
+            likesCount: 0,
+            dislikesCount: 0,
+        });
+
     } catch (err) {
         console.error('Error adding new comment:', err);
         return res.status(500).json({ message: 'An error occurred while adding the comment.' });

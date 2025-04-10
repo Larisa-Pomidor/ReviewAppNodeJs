@@ -67,6 +67,8 @@ app.use('/auth', require('./routes/auth'));
 app.use('/refresh', require('./routes/refresh'));
 app.use('/logout', require('./routes/logout'));
 
+app.use(verifyJWT);
+
 app.use('/reviews', require('./routes/api/reviews'));
 app.use('/publishers', require('./routes/api/publishers'));
 app.use('/developers', require('./routes/api/developers'));
@@ -79,7 +81,6 @@ app.use('/sections', require('./routes/api/sections'));
 
 
 app.use('/users', require('./routes/api/users'));
-app.use(verifyJWT);
 
 app.all('*', (req, res) => {
     res.status(404).json({ "error": "404 Not Found" });
