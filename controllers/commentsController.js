@@ -109,7 +109,13 @@ const getAllCommentsByReviewId = async (req, res) => {
 
 const addCommentByReviewId = async (req, res) => {
     try {
-        const userId = 2;
+
+        const username = req.user;
+        const user = await User.findOne({ where: { username } });
+        if (!user) {
+            return res.status(404).json({ 'message': `User is not found` });
+        }
+
         const { id } = req.params;
         const { parentCommentId, text } = req.body;
 
@@ -126,7 +132,7 @@ const addCommentByReviewId = async (req, res) => {
 
         const newComment = await Comment.create({
             text,
-            userId: userId,
+            userId: user.id,
             reviewId: review.id,
             ...(parentCommentId && { parentCommentId })
         });

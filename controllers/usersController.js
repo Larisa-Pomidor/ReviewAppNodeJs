@@ -14,22 +14,22 @@ const getAllUsers = async (req, res) => {
     }
 }
 
-// const deleteUser = async (req, res) => {
-//     try {
-//         const username = req.user;
-//         const user = await User.findOne({ where: { username } });
-//         if (!user) {
-//             return res.status(404).json({ 'message': `User is not found` });
-//         }
+const deleteUser = async (req, res) => {
+    try {
+        const username = req.user;
+        const user = await User.findOne({ where: { username } });
+        if (!user) {
+            return res.status(404).json({ 'message': `User is not found` });
+        }
 
-//         user.isDeleted = !user.isDeleted;
-//         await user.save();
-//         res.json(user);
-//     } catch (error) {
-//         console.error("Error deleting user:", error);
-//         return res.status(500).json({ message: "An error occurred while deleting the user." });
-//     }
-// }
+        user.isDeleted = !user.isDeleted;
+        await user.save();
+        res.json(user);
+    } catch (error) {
+        console.error("Error deleting user:", error);
+        return res.status(500).json({ message: "An error occurred while deleting the user." });
+    }
+}
 
 const getUser = async (req, res) => {
     try {
