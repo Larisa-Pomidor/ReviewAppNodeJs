@@ -2,7 +2,7 @@ const Review = require('../model/Review');
 const Section = require('../model/Section');
 
 const uploadImages = require("../middleware/uploadImagesCloudinary");
-const uploadFileToStorage = require("../middleware/uploadImagesToStorage");
+const { uploadFileToStorage, deleteFileFromStorage } = require("../middleware/uploadImagesToStorage");
 
 const getSectionsByReviewId = async (req, res) => {
     const { id } = req.params;
@@ -106,9 +106,13 @@ const updateSection = async (req, res) => {
                 return res.status(404).json({ message: `Section with id ${id} not found` });
             }
 
+            console.log(section)
+
             let sectionImageUrl;
 
-            if (removeImage !== "true") {               
+            let sectionOldImageUrl = section.image;
+
+            if (removeImage !== "true") {
 
                 if (req.files && req.files[0]) {
                     const fileExtensionSectionImage = req.files[0].mimetype.split("/")[1];
@@ -122,9 +126,19 @@ const updateSection = async (req, res) => {
                     );
 
                     section.image = sectionImageUrl
+
+                    if (sectionOldImageUrl) {
+                        const oldFileName = sectionOldImageUrl.split('/').pop();
+                        await deleteFileFromStorage(`sections/${oldFileName}`);
+                    }
                 }
             } else {
                 section.image = null;
+
+                if (sectionOldImageUrl) {
+                    const oldFileName = sectionOldImageUrl.split('/').pop();
+                    await deleteFileFromStorage(`sections/${oldFileName}`);
+                }
             }
 
             if (nameRu) section.nameRu = nameRu;

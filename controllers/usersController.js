@@ -1,7 +1,9 @@
 const User = require('../model/User');
+const bcrypt = require('bcrypt');
 
 const uploadImages = require("../middleware/uploadImagesCloudinary");
-const uploadFileToStorage = require("../middleware/uploadImagesToStorage");
+
+const { uploadFileToStorage, deleteFileFromStorage } = require("../middleware/uploadImagesToStorage");
 
 const getAllUsers = async (req, res) => {
     try {
@@ -65,6 +67,8 @@ const updateUser = async (req, res) => {
         if (err) return res.status(400).json({ error: "Multer error" });
 
         try {
+
+            // await deleteFileFromStorage('userAvatar', `userAvatar-1750580702015.jpeg`);
             const username = req.user;
             const user = await User.findOne({ where: { username } });
             if (!user) {
@@ -72,11 +76,31 @@ const updateUser = async (req, res) => {
             }
 
             const { nickname } = req.body;
+            const { oldPassword } = req.body;
+            const { newPassword } = req.body;
+
+            if (newPassword) {
+                if (!oldPassword)
+                    return res.status(400).json({ 'message': 'Both old password and confirmed new password are required!' });
+
+                const match = await bcrypt.compare(oldPassword, user.password);
+
+                if (!match)
+                    return res.status(400).json({ 'message': 'Password is incorrect.' });
+
+                hashedPwd = await bcrypt.hash(newPassword, 10);
+
+                user.password = hashedPwd;
+            }
 
             if (!nickname && !req.files[0]) {
                 return res.status(400)
                     .json({ message: 'At least one change is required.' });
             }
+
+            if (nickname) user.nickname = nickname;
+
+            let oldAvatarUrl = user.avatar;
 
             if (req.files[0]) {
                 const fileExtensionAvatar = req.files[0].mimetype.split("/")[1];
@@ -90,9 +114,12 @@ const updateUser = async (req, res) => {
                 );
 
                 user.avatar = avatarUrl;
-            }
 
-            if (nickname) user.nickname = nickname;
+                if (oldAvatarUrl) {
+                    const oldFileName = oldAvatarUrl.split('/').pop();
+                    await deleteFileFromStorage(`userAvatar/${oldFileName}`);
+                }
+            }
 
             await user.save();
 

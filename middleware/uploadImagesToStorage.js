@@ -13,4 +13,16 @@ const uploadFileToStorage = async (fileBuffer, fileName, folder, mimeType) => {
     return supabase.storage.from(process.env.SUPABASE_BUCKET_NAME).getPublicUrl(`${folder}/${fileName}`).data.publicUrl;
 };
 
-module.exports = uploadFileToStorage;
+async function deleteFileFromStorage(fileName) {
+    const { error } = await supabase
+        .storage
+        .from(process.env.SUPABASE_BUCKET_NAME)
+        .remove([fileName]);
+
+    if (error) throw error;
+};
+
+module.exports = {
+    uploadFileToStorage,
+    deleteFileFromStorage
+};

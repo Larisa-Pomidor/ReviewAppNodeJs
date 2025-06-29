@@ -4,6 +4,7 @@ const reviewsController = require('../../controllers/reviewsController');
 const sectionsController = require('../../controllers/sectionsController');
 const ROLES_LIST = require('../../config/roles_list');
 const verifyRoles = require('../../middleware/verifyRoles');
+const verifyJWT = require('../../middleware/verifyJWT');
 
 /**
  * @swagger
@@ -89,7 +90,9 @@ const verifyRoles = require('../../middleware/verifyRoles');
  */
 router.route('/')
     .get(reviewsController.getAllReviews)
-    .post(reviewsController.addReview)
+    .post(verifyJWT,
+        verifyRoles(ROLES_LIST.Admin),
+        reviewsController.addReview)
 
 /**
 * @swagger
@@ -183,11 +186,17 @@ router.route('/')
 */
 router.route('/:id')
     .get(reviewsController.getReviewById)
-    .delete(reviewsController.deleteReview)
-    .put(reviewsController.updateReview);
+    .delete(verifyJWT,
+        verifyRoles(ROLES_LIST.Admin),
+        reviewsController.deleteReview)
+    .put(verifyJWT,
+        verifyRoles(ROLES_LIST.Admin),
+        reviewsController.updateReview);
 
 router.route('/:id/sections')
-    .post(sectionsController.addSection)
+    .post(verifyJWT,
+        verifyRoles(ROLES_LIST.Admin),
+        sectionsController.addSection)
 
 /**
 * @swagger
@@ -267,9 +276,13 @@ router.route('/:id/genres')
     .get(reviewsController.getReviewsByGenres)
 
 router.route('/:id/views')
-    .put(reviewsController.updateViews)
+    .put(verifyJWT,
+        verifyRoles(ROLES_LIST.Admin),
+        reviewsController.updateViews)
 
 router.route('/:id/rate')
-    .put(reviewsController.rateReview)
+    .put(verifyJWT,
+        verifyRoles(ROLES_LIST.Admin),
+        reviewsController.rateReview)
 
 module.exports = router;

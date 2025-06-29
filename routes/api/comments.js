@@ -3,6 +3,7 @@ const router = express.Router();
 const commentsController = require('../../controllers/commentsController');
 const ROLES_LIST = require('../../config/roles_list');
 const verifyRoles = require('../../middleware/verifyRoles');
+const verifyJWT = require('../../middleware/verifyJWT');
 
 /**
 * @swagger
@@ -67,13 +68,18 @@ const verifyRoles = require('../../middleware/verifyRoles');
 */
 router.route('/:id')
     .get(commentsController.getAllCommentsByReviewId)
-    .post(commentsController.addCommentByReviewId)
-    .delete(commentsController.banCommentById)
+    .post(verifyJWT,
+        commentsController.addCommentByReviewId)
+    .delete(verifyJWT,
+        verifyRoles(ROLES_LIST.Admin),
+        commentsController.banCommentById)
 
 router.route('/:id/like')
-    .put(commentsController.likeComment)
+    .put(verifyJWT,
+        commentsController.likeComment)
 
 router.route('/:id/dislike')
-    .put(commentsController.dislikeComment)
+    .put(verifyJWT,
+        commentsController.dislikeComment)
 
 module.exports = router;

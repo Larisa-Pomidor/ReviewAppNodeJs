@@ -11,7 +11,7 @@ const Developer = require('../model/Developer');
 const Section = require('../model/Section');
 
 const uploadImages = require("../middleware/uploadImagesCloudinary");
-const uploadFileToStorage = require("../middleware/uploadImagesToStorage");
+const { uploadFileToStorage, deleteFileFromStorage } = require("../middleware/uploadImagesToStorage");
 const ReviewUser = require("../model/ReviewUser");
 const User = require("../model/User");
 
@@ -439,6 +439,8 @@ const updateReview = async (req, res) => {
                 return res.status(404).json({ message: `Review with id ${id} not found` });
             }
 
+            let oldGamePosterUrl = review.gamePoster;
+
             let gamePosterUrl;
 
             if (gamePosterFile) {
@@ -451,7 +453,14 @@ const updateReview = async (req, res) => {
                     "gamePosters",
                     gamePosterFile.mimetype
                 );
+
+                if (oldGamePosterUrl) {
+                    const oldFileName = oldGamePosterUrl.split('/').pop();
+                    await deleteFileFromStorage(`gamePosters/${oldFileName}`);
+                }
             }
+
+            let oldThumbnailUrl = review.gameThumbnail;
 
             let gameThumbnailUrl;
 
@@ -465,6 +474,11 @@ const updateReview = async (req, res) => {
                     "gameThumbnails",
                     gameThumbnailFile.mimetype
                 );
+
+                if (oldThumbnailUrl) {
+                    const oldFileName = oldThumbnailUrl.split('/').pop();
+                    await deleteFileFromStorage(`gameThumbnails/${oldFileName}`);
+                }
             }
 
             if (gameTitle) review.gameTitle = gameTitle;
