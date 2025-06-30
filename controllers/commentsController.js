@@ -38,19 +38,40 @@ const getAllCommentsByReviewId = async (req, res) => {
                                 `),
                                 'dislikesCount'
                             ],
+                            // ...(username
+                            //     ? [
+                            //         [
+                            //             Sequelize.literal(`
+                            //                 (
+                            //                     SELECT "comment_users"."rating"
+                            //                     FROM "comment_users"
+                            //                     INNER JOIN "users" ON "users"."id" = "comment_users"."user_id"
+                            //                     WHERE "comment_users"."comment_id" = "replies"."id"
+                            //                     AND "users"."username" = '${username}'
+                            //                     LIMIT 1
+                            //                 )
+                            //             `),
+                            //             'userCommentRating'
+                            //         ]
+                            //     ]
+                            //     : [])
                             ...(username
                                 ? [
                                     [
                                         Sequelize.literal(`
                                             (
-                                                SELECT "comment_users"."rating"
+                                                SELECT CASE
+                                                WHEN "comment_users"."rating" IS NULL THEN NULL
+                                                WHEN "comment_users"."rating" = 0 THEN FALSE
+                                                ELSE TRUE
+                                                END
                                                 FROM "comment_users"
                                                 INNER JOIN "users" ON "users"."id" = "comment_users"."user_id"
                                                 WHERE "comment_users"."comment_id" = "replies"."id"
                                                 AND "users"."username" = '${username}'
                                                 LIMIT 1
                                             )
-                                        `),
+                                            `),
                                         'userCommentRating'
                                     ]
                                 ]
