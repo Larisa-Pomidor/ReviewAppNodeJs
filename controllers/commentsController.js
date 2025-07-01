@@ -6,7 +6,7 @@ const CommentUser = require('../model/CommentUser');
 
 const getAllCommentsByReviewId = async (req, res) => {
     try {
-        const username = req.user || '1'; // Ensure username is properly accessed
+        const username = req.user;
         const { id } = req.params;
 
         const comments = await Comment.findAll({
@@ -62,7 +62,7 @@ const getAllCommentsByReviewId = async (req, res) => {
                                             (
                                                 SELECT CASE
                                                 WHEN "comment_users"."rating" IS NULL THEN NULL
-                                                WHEN "comment_users"."rating" = 0 THEN FALSE
+                                                WHEN "comment_users"."rating" = false THEN FALSE
                                                 ELSE TRUE
                                                 END
                                                 FROM "comment_users"
@@ -104,12 +104,16 @@ const getAllCommentsByReviewId = async (req, res) => {
                             [
                                 Sequelize.literal(`
                                     (
-                                        SELECT "comment_users"."rating"
-                                        FROM "comment_users"
-                                        INNER JOIN "users" ON "users"."id" = "comment_users"."user_id"
-                                        WHERE "comment_users"."comment_id" = "Comment"."id"
-                                        AND "users"."username" = '${username}'
-                                        LIMIT 1
+                                        SELECT CASE
+                                                WHEN "comment_users"."rating" IS NULL THEN NULL
+                                                WHEN "comment_users"."rating" = false THEN FALSE
+                                                ELSE TRUE
+                                                END
+                                                FROM "comment_users"
+                                                INNER JOIN "users" ON "users"."id" = "comment_users"."user_id"
+                                                WHERE "comment_users"."comment_id" = "replies"."id"
+                                                AND "users"."username" = '${username}'
+                                                LIMIT 1
                                     )
                                 `),
                                 'userCommentRating'
