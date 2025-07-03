@@ -67,7 +67,7 @@ const verifyJWT = require('../../middleware/verifyJWT');
 *         description: An unexpected error occurred while changing the comment visibility.
 */
 router.route('/:id')
-    .get(commentsController.getAllCommentsByReviewId)
+    .get(verifyJWT, commentsController.getAllCommentsByReviewId)
     .post(verifyJWT,
         commentsController.addCommentByReviewId)
     .delete(verifyJWT,

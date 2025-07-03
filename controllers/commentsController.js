@@ -55,27 +55,27 @@ const getAllCommentsByReviewId = async (req, res) => {
                             //         ]
                             //     ]
                             //     : [])
-                            ...(username
-                                ? [
-                                    [
-                                        Sequelize.literal(`
-                                            (
-                                                SELECT CASE
-                                                WHEN "comment_users"."rating" IS NULL THEN NULL
-                                                WHEN "comment_users"."rating" = false THEN FALSE
-                                                ELSE TRUE
-                                                END
-                                                FROM "comment_users"
-                                                INNER JOIN "users" ON "users"."id" = "comment_users"."user_id"
-                                                WHERE "comment_users"."comment_id" = "replies"."id"
-                                                AND "users"."username" = '${username}'
-                                                LIMIT 1
-                                            )
-                                            `),
-                                        'userCommentRating'
-                                    ]
-                                ]
-                                : [])
+                         ...(username
+    ? [
+        [
+            Sequelize.literal(`
+                (
+                    SELECT CASE
+                            WHEN "comment_users"."rating" IS NULL THEN NULL
+                            WHEN "comment_users"."rating" = false THEN FALSE
+                            ELSE TRUE
+                            END
+                    FROM "comment_users"
+                    INNER JOIN "users" ON "users"."id" = "comment_users"."user_id"
+                    WHERE "comment_users"."comment_id" = "replies"."id"
+                    AND "users"."username" = '${username}'
+                    LIMIT 1
+                )
+            `),
+            'userCommentRating'
+        ]
+    ]
+    : [])
                         ]
                     }
                 }
@@ -99,27 +99,28 @@ const getAllCommentsByReviewId = async (req, res) => {
                         `),
                         'dislikesCount'
                     ],
-                    ...(username
-                        ? [
-                            [
-                                Sequelize.literal(`
-                                    (
-                                        SELECT CASE
-                                                WHEN "comment_users"."rating" IS NULL THEN NULL
-                                                WHEN "comment_users"."rating" = false THEN FALSE
-                                                ELSE TRUE
-                                                END
-                                                FROM "comment_users"
-                                                INNER JOIN "users" ON "users"."id" = "comment_users"."user_id"
-                                                WHERE "comment_users"."comment_id" = "replies"."id"
-                                                AND "users"."username" = '${username}'
-                                                LIMIT 1
-                                    )
-                                `),
-                                'userCommentRating'
-                            ]
-                        ]
-                        : [])
+                   ...(username
+    ? [
+        [
+            Sequelize.literal(`
+                (
+                    SELECT CASE
+                            WHEN "comment_users"."rating" IS NULL THEN NULL
+                            WHEN "comment_users"."rating" = false THEN FALSE
+                            ELSE TRUE
+                            END
+                    FROM "comment_users"
+                    INNER JOIN "users" ON "users"."id" = "comment_users"."user_id"
+                    WHERE "comment_users"."comment_id" = "Comment"."id"
+                    AND "users"."username" = '${username}'
+                    LIMIT 1
+                )
+            `),
+            'userCommentRating'
+        ]
+    ]
+    : [])
+
                 ]
             }
         });
@@ -201,7 +202,7 @@ const banCommentById = async (req, res) => {
 
 const likeComment = async (req, res) => {
     try {
-        const username = req.user || '1';
+        const username = req.user;
         const user = await User.findOne({ where: { username } });
         if (!user) {
             return res.status(404).json({ 'message': `User is not found` });
@@ -216,14 +217,17 @@ const likeComment = async (req, res) => {
         }
 
         const commentUser = await CommentUser.findOne({ where: { user_id: user.id, comment_id: id } });
+        console.log(commentUser, 'commentUser')
 
         if (!commentUser)
             await CommentUser.create({ comment_id: id, user_id: user.id, rating: true })
         else if (commentUser.rating !== true) {
+            console.log(commentUser.rating, 'commentUser')
             commentUser.rating = true;
             commentUser.save();
         }
         else {
+            console.log("delete");
             commentUser.destroy();
         }
 
