@@ -5,6 +5,7 @@ const sectionsController = require('../../controllers/sectionsController');
 const ROLES_LIST = require('../../config/roles_list');
 const verifyRoles = require('../../middleware/verifyRoles');
 const verifyJWT = require('../../middleware/verifyJWT');
+const optionalJWT = require('../../middleware/optionalJWT');
 
 /**
  * @swagger
@@ -89,7 +90,8 @@ const verifyJWT = require('../../middleware/verifyJWT');
  *         description: An unexpected error occurred while creating the review.
  */
 router.route('/')
-    .get(reviewsController.getAllReviews)
+    .get(
+        reviewsController.getAllReviews)
     .post(verifyJWT,
         verifyRoles(ROLES_LIST.Admin),
         reviewsController.addReview)
@@ -185,7 +187,8 @@ router.route('/')
 *         description: An unexpected error occurred while deleting the review.
 */
 router.route('/:id')
-    .get(reviewsController.getReviewById)
+    .get(optionalJWT,
+        reviewsController.getReviewById)
     .delete(verifyJWT,
         verifyRoles(ROLES_LIST.Admin),
         reviewsController.deleteReview)
@@ -282,7 +285,6 @@ router.route('/:id/views')
 
 router.route('/:id/rate')
     .put(verifyJWT,
-        verifyRoles(ROLES_LIST.Admin),
         reviewsController.rateReview)
 
 module.exports = router;

@@ -73,7 +73,8 @@ const getAllReviews = async (req, res) => {
 const getReviewById = async (req, res) => {
     try {
         const { id } = req.params;
-        const username = req.user || '1';
+        const username = req.user;
+        console.log(`Username from request: ${username}`);
 
         const attributes = {
             exclude: ['publisher_id', 'developer_id', 'publisherId', 'developerId'],
@@ -640,7 +641,7 @@ const deleteReview = async (req, res) => {
 const rateReview = async (req, res) => {
     try {
 
-        const username = req.user || '1';
+        const username = req.user;
         const user = await User.findOne({ where: { username } });
         if (!user) {
             return res.status(404).json({ 'message': `User is not found` });

@@ -4,6 +4,7 @@ const commentsController = require('../../controllers/commentsController');
 const ROLES_LIST = require('../../config/roles_list');
 const verifyRoles = require('../../middleware/verifyRoles');
 const verifyJWT = require('../../middleware/verifyJWT');
+const optionalJWT = require('../../middleware/optionalJWT');
 
 /**
 * @swagger
@@ -67,7 +68,7 @@ const verifyJWT = require('../../middleware/verifyJWT');
 *         description: An unexpected error occurred while changing the comment visibility.
 */
 router.route('/:id')
-    .get(verifyJWT, commentsController.getAllCommentsByReviewId)
+    .get(optionalJWT, commentsController.getAllCommentsByReviewId)
     .post(verifyJWT,
         commentsController.addCommentByReviewId)
     .delete(verifyJWT,
