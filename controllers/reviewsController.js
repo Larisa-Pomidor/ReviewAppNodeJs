@@ -15,6 +15,37 @@ const { uploadFileToStorage, deleteFileFromStorage } = require("../middleware/up
 const ReviewUser = require("../model/ReviewUser");
 const User = require("../model/User");
 
+const fetchYears = async (req, res) => {
+    try {
+        const years = await Review.findAll({
+            attributes: [
+                [
+                    Sequelize.literal('DISTINCT EXTRACT(YEAR FROM "game_release_date")'),
+                    'year'
+                ]
+            ],
+            order: [[Sequelize.literal('year'), 'ASC']],
+            raw: true
+        });
+
+        const uniqueYears = [...new Set(
+            years
+                .map(row => parseInt(row.year))
+                .filter(Boolean) // remove null or NaN
+        )];
+
+        const yearsList = uniqueYears.map((year, idx) => ({
+            id: idx + 1,
+            name: year
+        }));
+
+        res.status(200).json(yearsList);
+    } catch (err) {
+        console.error('Error fetching years:', err);
+        res.status(500).json({ message: 'Unexpected error while fetching years.' });
+    }
+};
+
 const getAllReviews = async (req, res) => {
     try {
         const { page, limit } = req.query;
@@ -676,5 +707,6 @@ module.exports = {
     getReviewHierarchy,
     getReviewsByGenres,
     updateViews,
-    rateReview
+    rateReview,
+    fetchYears
 }

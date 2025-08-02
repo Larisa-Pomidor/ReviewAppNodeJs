@@ -95,6 +95,10 @@ router.route('/')
     .post(verifyJWT,
         verifyRoles(ROLES_LIST.Admin),
         reviewsController.addReview)
+        
+router.route('/years')
+    .get(optionalJWT,
+        reviewsController.fetchYears)
 
 /**
 * @swagger
@@ -286,5 +290,6 @@ router.route('/:id/views')
 router.route('/:id/rate')
     .put(verifyJWT,
         reviewsController.rateReview)
+
 
 module.exports = router;
