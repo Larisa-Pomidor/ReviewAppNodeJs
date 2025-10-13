@@ -22,6 +22,16 @@ const getAllCommentsByReviewId = async (req, res) => {
                     attributes: {
                         exclude: ['parent_comment_id', 'parentCommentId'],
                         include: [
+                            // Replace text with "" if deleted
+                            [
+                                Sequelize.literal(`
+                                    CASE
+                                        WHEN "replies"."is_deleted" = TRUE THEN ''
+                                        ELSE "replies"."text"
+                                    END
+                                `),
+                                'text'
+                            ],
                             [
                                 Sequelize.literal(`
                                     (SELECT COUNT(*) FROM "comment_users"
@@ -38,27 +48,25 @@ const getAllCommentsByReviewId = async (req, res) => {
                                 `),
                                 'dislikesCount'
                             ],
-                         ...(username
-    ? [
-        [
-            Sequelize.literal(`
-                (
-                    SELECT CASE
-                            WHEN "comment_users"."rating" IS NULL THEN NULL
-                            WHEN "comment_users"."rating" = false THEN FALSE
-                            ELSE TRUE
-                            END
-                    FROM "comment_users"
-                    INNER JOIN "users" ON "users"."id" = "comment_users"."user_id"
-                    WHERE "comment_users"."comment_id" = "replies"."id"
-                    AND "users"."username" = '${username}'
-                    LIMIT 1
-                )
-            `),
-            'userCommentRating'
-        ]
-    ]
-    : [])
+                            ...(username
+                                ? [[
+                                    Sequelize.literal(`
+                                        (
+                                            SELECT CASE
+                                                    WHEN "comment_users"."rating" IS NULL THEN NULL
+                                                    WHEN "comment_users"."rating" = false THEN FALSE
+                                                    ELSE TRUE
+                                                    END
+                                            FROM "comment_users"
+                                            INNER JOIN "users" ON "users"."id" = "comment_users"."user_id"
+                                            WHERE "comment_users"."comment_id" = "replies"."id"
+                                            AND "users"."username" = '${username}'
+                                            LIMIT 1
+                                        )
+                                    `),
+                                    'userCommentRating'
+                                ]]
+                                : [])
                         ]
                     }
                 }
@@ -66,6 +74,16 @@ const getAllCommentsByReviewId = async (req, res) => {
             attributes: {
                 exclude: ['parent_comment_id', 'parentCommentId'],
                 include: [
+                    // Replace text with "" if deleted
+                    [
+                        Sequelize.literal(`
+                            CASE
+                                WHEN "Comment"."is_deleted" = TRUE THEN ''
+                                ELSE "Comment"."text"
+                            END
+                        `),
+                        'text'
+                    ],
                     [
                         Sequelize.literal(`
                             (SELECT COUNT(*) FROM "comment_users"
@@ -82,30 +100,32 @@ const getAllCommentsByReviewId = async (req, res) => {
                         `),
                         'dislikesCount'
                     ],
-                   ...(username
-    ? [
-        [
-            Sequelize.literal(`
-                (
-                    SELECT CASE
-                            WHEN "comment_users"."rating" IS NULL THEN NULL
-                            WHEN "comment_users"."rating" = false THEN FALSE
-                            ELSE TRUE
-                            END
-                    FROM "comment_users"
-                    INNER JOIN "users" ON "users"."id" = "comment_users"."user_id"
-                    WHERE "comment_users"."comment_id" = "Comment"."id"
-                    AND "users"."username" = '${username}'
-                    LIMIT 1
-                )
-            `),
-            'userCommentRating'
-        ]
-    ]
-    : [])
-
+                    ...(username
+                        ? [[
+                            Sequelize.literal(`
+                                (
+                                    SELECT CASE
+                                            WHEN "comment_users"."rating" IS NULL THEN NULL
+                                            WHEN "comment_users"."rating" = false THEN FALSE
+                                            ELSE TRUE
+                                            END
+                                    FROM "comment_users"
+                                    INNER JOIN "users" ON "users"."id" = "comment_users"."user_id"
+                                    WHERE "comment_users"."comment_id" = "Comment"."id"
+                                    AND "users"."username" = '${username}'
+                                    LIMIT 1
+                                )
+                            `),
+                            'userCommentRating'
+                        ]]
+                        : [])
                 ]
-            }
+            },
+            order: [
+                ['createdAt', 'ASC'],
+                [{ model: Comment, as: 'replies' }, 'createdAt', 'ASC'], 
+                ['id', 'ASC'] 
+            ]
         });
 
         return res.status(200).json(comments);
@@ -114,6 +134,7 @@ const getAllCommentsByReviewId = async (req, res) => {
         return res.status(500).json({ message: 'An unexpected error occurred while retrieving comments.' });
     }
 };
+
 
 
 const addCommentByReviewId = async (req, res) => {

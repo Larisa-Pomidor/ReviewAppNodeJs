@@ -150,11 +150,30 @@ const banUser = async (req, res) => {
     }
 }
 
+const silenceUser = async (req, res) => {
+    try {
+        if (!req?.params?.username) return res.status(400).json({ "message": 'User username required' });
+        const user = await User.findOne({ where: { username: req?.params?.username } });
+
+        if (!user) {
+            return res.status(204).json({ 'message': `User username ${!req?.params?.username} not found` });
+        }
+        user.isSilenced = !user.isSilenced;
+        await user.save();
+        res.json(user);
+    }
+    catch (error) {
+        console.error("Error updating user's status:", error);
+        return res.status(500).json({ message: "An error occurred while updating user's status." });
+    }
+}
+
 module.exports = {
     getAllUsers,
     deleteUser,
     getUser,
     updateUser,
     banUser,
-    getUserInfo
+    getUserInfo,
+    silenceUser
 }

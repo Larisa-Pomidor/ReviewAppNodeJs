@@ -24,4 +24,9 @@ router.route('/ban/:username')
         verifyRoles(ROLES_LIST.Admin),
         usersController.banUser);
 
+router.route('/silence/:username')
+    .put(verifyJWT,
+        verifyRoles(ROLES_LIST.Admin),
+        usersController.silenceUser);
+
 module.exports = router;

@@ -37,6 +37,12 @@ const User = sequelize.define('User', {
         defaultValue: false,
         field: 'is_banned'
     },
+    isSilenced: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+        field: 'is_silenced'
+    },
     createdAt: {
         type: DataTypes.DATE,
         allowNull: false,
